@@ -426,11 +426,11 @@ const handleDeletePatient = (id) => {
                 
                 <!-- Actions -->
                 <td class="py-3 align-middle text-center">
-                  <button class="btn btn-sm btn-link text-secondary mr-2" title="Xem chi tiết">
-                    <i class="far fa-eye fa-lg"></i>
+                  <button class="btn btn-sm btn-link text-secondary mr-2" title="Xem chi tiết" @click="triggerToast('Xem thông tin chi tiết bệnh nhân: ' + item.name)">
+                    <i class="far fa-eye fa-lg" style="color: #6b7280;"></i>
                   </button>
-                  <button class="btn btn-sm btn-link text-danger" title="Xóa" @click="handleDeletePatient(item.id)">
-                    <i class="far fa-trash-alt fa-lg"></i>
+                  <button class="btn btn-sm btn-link text-secondary" title="Chỉnh sửa" @click="triggerToast('Mở trình chỉnh sửa hồ sơ: ' + item.name)">
+                    <i class="fas fa-pencil-alt" style="color: #6b7280;"></i>
                   </button>
                 </td>
               </tr>

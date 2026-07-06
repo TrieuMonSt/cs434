@@ -1,536 +1,433 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 
-// Filter inputs
-const searchQuery = ref('');
-const roleFilter = ref('all');
-const statusFilter = ref('all');
+// Active Sub-Tab: 'ho-so', 'doi-mat-khau', 'bao-mat'
+const activeSubTab = ref('ho-so');
 
-// Activity History panel open
-const showHistoryPanel = ref(true);
+// Edit Mode
+const isEditing = ref(false);
 
-// Account List Data
-const accounts = ref([
-  {
-    id: 1,
-    name: 'Nguyễn Văn Hùng',
-    email: 'hung.nv@mediflow.vn',
-    initials: 'NH',
-    role: 'Bác sĩ chuyên khoa',
-    permissions: ['Khám bệnh', 'Kê đơn'],
-    status: 'active', // 'active', 'locked'
-    statusText: 'Đang hoạt động',
-    avatarBg: '#cffafe', // cyan-100
-    avatarColor: '#0891b2' // cyan-600
-  },
-  {
-    id: 2,
-    name: 'Trần Thị Lan',
-    email: 'lan.tt@mediflow.vn',
-    initials: 'TL',
-    role: 'Điều dưỡng',
-    permissions: ['Xem hồ sơ', 'Cập nhật chỉ số'],
-    status: 'locked',
-    statusText: 'Đã khóa',
-    avatarBg: '#e5e7eb', // grey-200
-    avatarColor: '#4b5563' // grey-600
-  },
-  {
-    id: 3,
-    name: 'Phạm Văn Vinh',
-    email: 'vinh.pv@mediflow.vn',
-    initials: 'PV',
-    role: 'Quản trị viên',
-    permissions: ['Toàn quyền', 'Cài đặt hệ thống'],
-    status: 'active',
-    statusText: 'Đang hoạt động',
-    avatarBg: '#dcfce7', // green-100
-    avatarColor: '#16a34a' // green-600
-  }
-]);
-
-// Computed filtered accounts
-const filteredAccounts = computed(() => {
-  return accounts.value.filter(item => {
-    // Search filter
-    const query = searchQuery.value.toLowerCase().trim();
-    const matchesSearch = !query || 
-      item.name.toLowerCase().includes(query) ||
-      item.email.toLowerCase().includes(query) ||
-      item.role.toLowerCase().includes(query);
-
-    // Role filter
-    const matchesRole = roleFilter.value === 'all' || 
-      (roleFilter.value === 'doctor' && item.role.includes('Bác sĩ')) ||
-      (roleFilter.value === 'nurse' && item.role.includes('Điều dưỡng')) ||
-      (roleFilter.value === 'admin' && item.role.includes('Quản trị'));
-
-    // Status filter
-    const matchesStatus = statusFilter.value === 'all' || 
-      item.status === statusFilter.value;
-
-    return matchesSearch && matchesRole && matchesStatus;
-  });
+// Profile Data
+const doctorProfile = ref({
+  fullName: 'Nguyễn Thành An',
+  nationalId: '079185002931',
+  gender: 'Nam',
+  dob: '1985-10-15',
+  doctorId: 'DOC-AN-001',
+  address: '128/4 Nguyễn Trãi, Phường 3, Quận 5, TP. Hồ Chí Minh',
+  specialty: 'Nội tổng quát',
+  department: 'Khoa Nội 1 - Tòa nhà A',
+  avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=200&h=200',
+  staffId: 'DR-2024-0082',
+  accountType: 'Quản trị viên',
+  certifications: [
+    { title: 'BSCK II - Nội khoa', detail: 'Xác thực bởi Bộ Y tế', icon: 'fas fa-user-shield', bg: '#ecfdf5', color: '#059669' },
+    { title: '12 năm kinh nghiệm', detail: 'Bệnh viện Chợ Rẫy', icon: 'fas fa-history', bg: '#f0fdfa', color: '#0d9488' }
+  ]
 });
 
-// Logs Data
-const logs = ref([
-  {
-    id: 1,
-    type: 'permission',
-    title: 'Bạn đã thay đổi quyền hạn cho Nguyễn Văn Hùng',
-    time: '10:45 AM',
-    detail: 'Cấp quyền "Kê đơn"',
-    date: 'Hôm nay - 24/05/2026',
-    icon: 'fas fa-shield-alt',
-    iconBg: '#e0f2fe',
-    iconColor: '#0284c7'
-  },
-  {
-    id: 2,
-    type: 'lock',
-    title: 'Bạn đã khóa tài khoản Trần Thị Lan',
-    time: '09:12 AM',
-    detail: 'Lý do: Vi phạm bảo mật',
-    date: 'Hôm nay - 24/05/2026',
-    icon: 'fas fa-user-lock',
-    iconBg: '#fee2e2',
-    iconColor: '#dc2626'
-  },
-  {
-    id: 3,
-    type: 'login',
-    title: 'Đăng nhập từ IP: 113.190.231.xx',
-    time: '08:05 AM',
-    detail: 'Chrome trên Windows',
-    date: 'Hôm nay - 24/05/2026',
-    icon: 'fas fa-info-circle',
-    iconBg: '#f3f4f6',
-    iconColor: '#4b5563'
-  },
-  {
-    id: 4,
-    type: 'create',
-    title: 'Tạo mới tài khoản Lê Minh Tuấn',
-    time: '04:30 PM',
-    detail: 'Vai trò: Kỹ thuật viên',
-    date: 'Hôm qua - 23/05/2026',
-    icon: 'fas fa-user-plus',
-    iconBg: '#dcfce7',
-    iconColor: '#16a34a'
-  }
-]);
+// Cache for rollback on cancel
+const profileBackup = ref({});
 
-// Group logs by date
-const groupedLogs = computed(() => {
-  const groups = {};
-  logs.value.forEach(log => {
-    if (!groups[log.date]) {
-      groups[log.date] = [];
-    }
-    groups[log.date].push(log);
-  });
-  return groups;
+// Change Password fields
+const passwordForm = ref({
+  currentPassword: '',
+  newPassword: '',
+  confirmPassword: ''
 });
 
-// Create Account Modal state
-const showModal = ref(false);
-const newAccount = ref({
-  name: '',
-  email: '',
-  role: 'Bác sĩ chuyên khoa',
-  permissionsStr: '',
-  status: 'active'
-});
-
-const handleCreate = () => {
-  if (!newAccount.value.name.trim() || !newAccount.value.email.trim()) return;
-
-  const permissions = newAccount.value.permissionsStr
-    ? newAccount.value.permissionsStr.split(',').map(s => s.trim())
-    : ['Xem hồ sơ'];
-
-  accounts.value.push({
-    id: Date.now(),
-    name: newAccount.value.name,
-    email: newAccount.value.email,
-    initials: newAccount.value.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase(),
-    role: newAccount.value.role,
-    permissions: permissions,
-    status: newAccount.value.status,
-    statusText: newAccount.value.status === 'active' ? 'Đang hoạt động' : 'Đã khóa',
-    avatarBg: '#dcfce7',
-    avatarColor: '#16a34a'
-  });
-
-  // Log action
-  logs.value.unshift({
-    id: Date.now(),
-    type: 'create',
-    title: `Tạo mới tài khoản ${newAccount.value.name}`,
-    time: 'Vừa xong',
-    detail: `Vai trò: ${newAccount.value.role}`,
-    date: 'Hôm nay - 24/05/2026',
-    icon: 'fas fa-user-plus',
-    iconBg: '#dcfce7',
-    iconColor: '#16a34a'
-  });
-
-  showModal.value = false;
-  // reset
-  newAccount.value = {
-    name: '',
-    email: '',
-    role: 'Bác sĩ chuyên khoa',
-    permissionsStr: '',
-    status: 'active'
-  };
+// Toast state
+const toastMessage = ref('');
+const triggerToast = (msg) => {
+  toastMessage.value = msg;
+  setTimeout(() => {
+    toastMessage.value = '';
+  }, 3000);
 };
 
-const toggleLock = (account) => {
-  const originalStatus = account.status;
-  account.status = account.status === 'active' ? 'locked' : 'active';
-  account.statusText = account.status === 'active' ? 'Đang hoạt động' : 'Đã khóa';
-  
-  if (account.status === 'locked') {
-    account.avatarBg = '#e5e7eb';
-    account.avatarColor = '#4b5563';
-  } else {
-    account.avatarBg = '#cffafe';
-    account.avatarColor = '#0891b2';
-  }
+// Start Editing
+const startEdit = () => {
+  profileBackup.value = { ...doctorProfile.value };
+  isEditing.value = true;
+};
 
-  // Log action
-  logs.value.unshift({
-    id: Date.now(),
-    type: account.status === 'locked' ? 'lock' : 'unlock',
-    title: `Bạn đã ${account.status === 'locked' ? 'khóa' : 'mở khóa'} tài khoản ${account.name}`,
-    time: 'Vừa xong',
-    detail: account.status === 'locked' ? 'Lý do: Thay đổi cấu hình' : 'Mở khóa truy cập',
-    date: 'Hôm nay - 24/05/2026',
-    icon: account.status === 'locked' ? 'fas fa-user-lock' : 'fas fa-user-check',
-    iconBg: account.status === 'locked' ? '#fee2e2' : '#dcfce7',
-    iconColor: account.status === 'locked' ? '#dc2626' : '#16a34a'
-  });
+// Cancel Editing
+const cancelEdit = () => {
+  doctorProfile.value = { ...profileBackup.value };
+  isEditing.value = false;
+  triggerToast('Đã hủy bỏ các thay đổi.');
+};
+
+// Save Profile changes
+const saveChanges = () => {
+  if (!doctorProfile.value.fullName.trim()) {
+    alert('Họ tên không được để trống.');
+    return;
+  }
+  isEditing.value = false;
+  triggerToast('Đã lưu thông tin tài khoản thành công!');
+};
+
+// Save Password changes
+const updatePassword = () => {
+  if (!passwordForm.value.currentPassword || !passwordForm.value.newPassword) {
+    alert('Vui lòng nhập đầy đủ mật khẩu hiện tại và mật khẩu mới.');
+    return;
+  }
+  if (passwordForm.value.newPassword !== passwordForm.value.confirmPassword) {
+    alert('Mật khẩu xác nhận không khớp.');
+    return;
+  }
+  triggerToast('Cập nhật mật khẩu mới thành công!');
+  passwordForm.value = { currentPassword: '', newPassword: '', confirmPassword: '' };
 };
 </script>
 
 <template>
-  <div class="container-fluid px-4 py-4">
-    <!-- Row combining main table and log panel -->
-    <div class="row">
-      <!-- Main Columns containing Account list -->
-      <div :class="showHistoryPanel ? 'col-xl-9 col-lg-8' : 'col-12'" class="transition-all">
-        <!-- Title and action buttons row -->
-        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
-          <div>
-            <h3 class="font-weight-bold mb-1 text-dark" style="font-family: 'Outfit', sans-serif;">Quản lý Tài khoản & Phân quyền</h3>
-            <p class="text-muted mb-0" style="font-size: 13.5px;">Quản lý người dùng, vai trò và quyền truy cập hệ thống MediFlow.</p>
-          </div>
-          
-          <div class="d-flex align-items-center mt-3 mt-md-0">
-            <button class="btn btn-light border mr-2 font-weight-bold text-dark px-3 py-2" style="font-size: 13.5px; background: white;">
-              <i class="fas fa-users-cog mr-2"></i> Phân quyền Nhóm
-            </button>
-            <button class="btn btn-dark font-weight-bold px-3 py-2" style="font-size: 13.5px; background-color: #0d9488; border-color: #0d9488;" @click="showModal = true">
-              <i class="fas fa-user-plus mr-2"></i> Thêm Tài khoản Mới
-            </button>
-          </div>
-        </div>
-
-        <!-- Filter bar Card -->
-        <div class="card border-0 shadow-sm rounded-lg mb-4">
-          <div class="card-body p-3">
-            <div class="row align-items-center">
-              <!-- Search name/email -->
-              <div class="col-lg-5 col-md-12 mb-3 mb-lg-0">
-                <div class="position-relative">
-                  <i class="fas fa-search position-absolute text-muted" style="left: 12px; top: 12px;"></i>
-                  <input 
-                    type="text" 
-                    class="form-control pl-4 border-0 bg-light rounded" 
-                    placeholder="Tìm theo tên, email hoặc số điện thoại..." 
-                    style="height: 38px; font-size: 13px;"
-                    v-model="searchQuery"
-                  >
-                </div>
-              </div>
-              <!-- Role dropdown -->
-              <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
-                <select class="form-control border-0 bg-light font-weight-bold" style="height: 38px; font-size: 13px;" v-model="roleFilter">
-                  <option value="all">Tất cả Vai trò</option>
-                  <option value="doctor">Bác sĩ chuyên khoa</option>
-                  <option value="nurse">Điều dưỡng</option>
-                  <option value="admin">Quản trị viên</option>
-                </select>
-              </div>
-              <!-- Status dropdown -->
-              <div class="col-lg-3 col-md-6 mb-3 mb-lg-0">
-                <select class="form-control border-0 bg-light font-weight-bold" style="height: 38px; font-size: 13px;" v-model="statusFilter">
-                  <option value="all">Tất cả Trạng thái</option>
-                  <option value="active">Đang hoạt động</option>
-                  <option value="locked">Đã khóa</option>
-                </select>
-              </div>
-              <!-- Toggle Log side panel button -->
-              <div class="col-lg-1 col-md-12 text-lg-right">
-                <button 
-                  class="btn btn-light border bg-white" 
-                  :class="{ active: showHistoryPanel }"
-                  @click="showHistoryPanel = !showHistoryPanel" 
-                  style="height: 38px; width: 38px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px;"
-                  title="Nhật ký hoạt động"
-                >
-                  <i class="fas fa-history text-secondary"></i>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Table Card list -->
-        <div class="card border-0 shadow-sm rounded-lg mb-4">
-          <div class="card-body p-0">
-            <div class="table-responsive">
-              <table class="table table-hover mb-0 text-left" style="font-size: 13.5px; vertical-align: middle;">
-                <thead class="thead-light">
-                  <tr class="text-uppercase" style="font-family: 'Outfit', sans-serif; font-size: 12px; letter-spacing: 0.5px;">
-                    <th class="py-3 px-4" style="width: 40px;">
-                      <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" id="checkAll">
-                        <label class="custom-control-label" for="checkAll"></label>
-                      </div>
-                    </th>
-                    <th class="py-3">Họ tên & Email</th>
-                    <th class="py-3">Vai trò</th>
-                    <th class="py-3">Quyền hạn</th>
-                    <th class="py-3">Trạng thái</th>
-                    <th class="py-3 text-center">Thao tác</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="item in filteredAccounts" :key="item.id">
-                    <td class="py-3 px-4 align-middle">
-                      <div class="custom-control custom-checkbox">
-                        <input type="checkbox" class="custom-control-input" :id="'chk-' + item.id">
-                        <label class="custom-control-label" :for="'chk-' + item.id"></label>
-                      </div>
-                    </td>
-                    <!-- Name & email block -->
-                    <td class="py-3 align-middle">
-                      <div class="d-flex align-items-center">
-                        <div 
-                          class="rounded-circle d-flex align-items-center justify-content-center font-weight-bold mr-3"
-                          :style="{
-                            width: '40px',
-                            height: '40px',
-                            backgroundColor: item.avatarBg,
-                            color: item.avatarColor,
-                            fontSize: '13.5px'
-                          }"
-                        >
-                          {{ item.initials }}
-                        </div>
-                        <div>
-                          <h6 class="font-weight-bold mb-0 text-dark">{{ item.name }}</h6>
-                          <small class="text-muted">{{ item.email }}</small>
-                        </div>
-                      </div>
-                    </td>
-                    <!-- Role -->
-                    <td class="py-3 align-middle font-weight-bold text-dark">{{ item.role }}</td>
-                    
-                    <!-- Permissions list badges -->
-                    <td class="py-3 align-middle">
-                      <div class="d-flex flex-wrap">
-                        <span 
-                          v-for="(p, pIdx) in item.permissions" 
-                          :key="pIdx" 
-                          class="badge badge-light border mr-1 mb-1 px-2 py-1"
-                          style="font-size: 11px; font-weight: 500; border-radius: 6px;"
-                        >
-                          {{ p }}
-                        </span>
-                      </div>
-                    </td>
-                    <!-- Active Status -->
-                    <td class="py-3 align-middle">
-                      <span 
-                        class="badge badge-pill px-3 py-2 font-weight-bold"
-                        :style="{
-                          backgroundColor: item.status === 'active' ? '#f0fdf4' : '#fef2f2',
-                          color: item.status === 'active' ? '#16a34a' : '#dc2626'
-                        }"
-                      >
-                        <i class="fas fa-circle mr-1" style="font-size: 8px;"></i>
-                        {{ item.statusText }}
-                      </span>
-                    </td>
-                    <!-- Action buttons -->
-                    <td class="py-3 align-middle text-center">
-                      <button class="btn btn-sm btn-link text-secondary mr-2" title="Chỉnh sửa quyền hạn">
-                        <i class="fas fa-sliders-h"></i>
-                      </button>
-                      <button 
-                        class="btn btn-sm btn-link mr-2" 
-                        :class="item.status === 'active' ? 'text-danger' : 'text-success'"
-                        :title="item.status === 'active' ? 'Khóa tài khoản' : 'Mở khóa'"
-                        @click="toggleLock(item)"
-                      >
-                        <i :class="item.status === 'active' ? 'fas fa-user-lock' : 'fas fa-user-check'"></i>
-                      </button>
-                      <button class="btn btn-sm btn-link text-secondary" title="Sửa thông tin">
-                        <i class="fas fa-pencil-alt"></i>
-                      </button>
-                    </td>
-                  </tr>
-
-                  <!-- Empty result check -->
-                  <tr v-if="filteredAccounts.length === 0">
-                    <td colspan="6" class="text-center py-5 text-muted">
-                      <i class="fas fa-user-slash fa-2x mb-3 text-secondary" style="opacity: 0.5;"></i>
-                      <p class="mb-0">Không tìm thấy tài khoản nào khớp với dữ liệu lọc.</p>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            
-            <!-- Table pagination block -->
-            <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center p-4 border-top">
-              <small class="text-muted mb-3 mb-sm-0">
-                Hiển thị 1-{{ filteredAccounts.length }} trên tổng số 42 tài khoản
-              </small>
-              <nav aria-label="Table navigation">
-                <ul class="pagination pagination-sm mb-0">
-                  <li class="page-item disabled"><span class="page-link border-0 text-secondary">&laquo;</span></li>
-                  <li class="page-item active"><a class="page-link border-0 text-white rounded" style="background-color: #0d9488;" href="#">1</a></li>
-                  <li class="page-item"><a class="page-link border-0 text-secondary" href="#">2</a></li>
-                  <li class="page-item"><a class="page-link border-0 text-secondary" href="#">3</a></li>
-                  <li class="page-item disabled"><span class="page-link border-0 text-secondary">...</span></li>
-                  <li class="page-item"><a class="page-link border-0 text-secondary" href="#" aria-label="Next">&raquo;</a></li>
-                </ul>
-              </nav>
-            </div>
-
-          </div>
-        </div>
-
+  <div class="container-fluid px-4 py-4 bg-light" style="min-height: calc(100vh - 120px);">
+    <!-- Title Area -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+      <div>
+        <h3 class="font-weight-bold mb-1 text-dark" style="font-family: 'Outfit', sans-serif; font-size: 26px;">Quản lý tài khoản</h3>
+        
+        <!-- Navigation Sub-Tabs -->
+        <ul class="nav nav-tabs border-bottom-0 mt-3" style="font-size: 14.5px;">
+          <li class="nav-item mr-3">
+            <a 
+              class="nav-link px-0 py-2 border-0 font-weight-bold cursor-pointer" 
+              :style="{ 
+                color: activeSubTab === 'ho-so' ? '#0f766e' : '#6b7280', 
+                borderBottom: activeSubTab === 'ho-so' ? '3px solid #0f766e' : 'none' 
+              }"
+              @click="activeSubTab = 'ho-so'"
+            >
+              Hồ sơ
+            </a>
+          </li>
+          <li class="nav-item mr-3">
+            <a 
+              class="nav-link px-0 py-2 border-0 font-weight-bold cursor-pointer" 
+              :style="{ 
+                color: activeSubTab === 'doi-mat-khau' ? '#0f766e' : '#6b7280', 
+                borderBottom: activeSubTab === 'doi-mat-khau' ? '3px solid #0f766e' : 'none' 
+              }"
+              @click="activeSubTab = 'doi-mat-khau'"
+            >
+              Đổi mật khẩu
+            </a>
+          </li>
+          <li class="nav-item">
+            <a 
+              class="nav-link px-0 py-2 border-0 font-weight-bold cursor-pointer" 
+              :style="{ 
+                color: activeSubTab === 'bao-mat' ? '#0f766e' : '#6b7280', 
+                borderBottom: activeSubTab === 'bao-mat' ? '3px solid #0f766e' : 'none' 
+              }"
+              @click="activeSubTab = 'bao-mat'"
+            >
+              Thông báo & Bảo mật
+            </a>
+          </li>
+        </ul>
       </div>
 
-      <!-- Right Column containing Activity History (Sidebar log panel) -->
-      <div v-if="showHistoryPanel" class="col-xl-3 col-lg-4 pl-lg-0 border-left bg-white shadow-sm" style="min-height: calc(100vh - 100px);">
-        <div class="d-flex justify-content-between align-items-center p-3 text-white" style="background-color: #0f766e; margin: -1.5rem -1rem 1.5rem -1rem;">
-          <h6 class="font-weight-bold mb-0">
-            <i class="fas fa-history mr-2"></i> Lịch sử Hoạt động
-          </h6>
-          <button type="button" class="close text-white" style="outline: none;" @click="showHistoryPanel = false">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-
-        <!-- History Timeline Container -->
-        <div class="px-2" style="max-height: 600px; overflow-y: auto;">
-          <div v-for="(logGroup, date) in groupedLogs" :key="date" class="mb-4">
-            <h6 class="text-uppercase text-secondary font-weight-bold mb-3" style="font-size: 11px; letter-spacing: 0.5px;">
-              {{ date }}
-            </h6>
-
-            <!-- Items -->
-            <div class="d-flex flex-column">
-              <div v-for="log in logGroup" :key="log.id" class="d-flex mb-3 border-bottom pb-2">
-                <!-- Icon box -->
-                <div 
-                  class="rounded-circle d-flex align-items-center justify-content-center mr-3 flex-shrink-0"
-                  :style="{
-                    width: '32px',
-                    height: '32px',
-                    backgroundColor: log.iconBg,
-                    color: log.iconColor
-                  }"
-                >
-                  <i :class="log.icon" style="font-size: 13px;"></i>
-                </div>
-                <!-- Text box -->
-                <div class="text-left">
-                  <p class="mb-1 text-dark font-weight-bold" style="font-size: 12.5px; line-height: 16px;">
-                    {{ log.title }}
-                  </p>
-                  <p class="mb-0 text-muted" style="font-size: 11px;">
-                    {{ log.time }} &bull; {{ log.detail }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Bottom Link button inside sidebar log -->
-        <div class="p-3 mt-4">
-          <button class="btn btn-block btn-light border font-weight-bold text-secondary" style="font-size: 12px; height: 38px;">
-            Xem tất cả nhật ký
-          </button>
-        </div>
+      <!-- Action Button Top Right -->
+      <div v-if="activeSubTab === 'ho-so' && !isEditing" class="mt-3 mt-md-0">
+        <button @click="startEdit" class="btn btn-dark font-weight-bold px-4 py-2 d-flex align-items-center" style="font-size: 13.5px; background-color: #0f766e; border-color: #0f766e; border-radius: 8px;">
+          <i class="fas fa-pencil-alt mr-2" style="font-size: 12px;"></i> Chỉnh sửa
+        </button>
       </div>
     </div>
 
-    <!-- Create Account Modal Form -->
-    <div v-if="showModal" class="modal d-block" style="background: rgba(0, 0, 0, 0.5); z-index: 1040;" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius: 16px; overflow: hidden;">
-          <div class="modal-header bg-light py-3 border-bottom">
-            <h5 class="modal-title font-weight-bold text-dark" style="font-size: 16px;">Thêm Tài Khoản Nhân Viên Mới</h5>
-            <button type="button" class="close" @click="showModal = false" aria-label="Close">
-              <span aria-hidden="true">&times;</span>
-            </button>
+    <!-- Toast Notification -->
+    <div v-if="toastMessage" class="alert alert-success position-fixed shadow-lg" style="bottom: 20px; right: 20px; z-index: 1050; border-left: 5px solid #10b981; min-width: 300px; border-radius: 8px;">
+      <div class="d-flex align-items-center">
+        <i class="fas fa-check-circle text-success mr-2 fa-lg"></i>
+        <strong style="font-size: 13.5px; color: #1e293b;">{{ toastMessage }}</strong>
+      </div>
+    </div>
+
+    <!-- Tab 1: Profile View -->
+    <div v-if="activeSubTab === 'ho-so'" class="row">
+      <!-- Left Column: Avatar & Certifications -->
+      <div class="col-xl-4 mb-4">
+        <!-- Profile summary card -->
+        <div class="card border-0 shadow-sm rounded-lg mb-4 text-center p-4 bg-white" style="border: 1px solid #e2e8f0 !important;">
+          <div class="position-relative d-inline-block mx-auto mb-3">
+            <img 
+              :src="doctorProfile.avatar" 
+              alt="Doctor Avatar" 
+              class="rounded-circle border"
+              style="width: 140px; height: 140px; object-fit: cover; border: 4px solid #f1f5f9 !important;"
+            >
+            <span class="position-absolute bg-success rounded-circle" style="width: 16px; height: 16px; right: 8px; bottom: 8px; border: 3px solid white;"></span>
           </div>
-          <div class="modal-body p-4 text-left">
-            <div class="form-group mb-3">
-              <label class="font-weight-bold text-secondary mb-1" style="font-size: 13px;">Họ tên nhân viên *</label>
-              <input type="text" class="form-control" placeholder="Ví dụ: Trần Thị Lan..." v-model="newAccount.name">
+
+          <h5 class="font-weight-bold text-dark mb-1" style="font-family: 'Outfit', sans-serif;">BS. {{ doctorProfile.fullName }}</h5>
+          <p class="text-secondary mb-4" style="font-size: 13px;">Chuyên khoa {{ doctorProfile.specialty }}</p>
+
+          <!-- Status badge groups -->
+          <div class="row px-2">
+            <div class="col-6 px-1">
+              <div class="p-2 rounded bg-light border text-center">
+                <small class="d-block text-secondary font-weight-bold" style="font-size: 8.5px; letter-spacing: 0.5px;">ID NHÂN VIÊN</small>
+                <span class="font-weight-bold text-dark" style="font-size: 12.5px;">{{ doctorProfile.staffId }}</span>
+              </div>
             </div>
-            
-            <div class="form-group mb-3">
-              <label class="font-weight-bold text-secondary mb-1" style="font-size: 13px;">Email tài khoản *</label>
-              <input type="email" class="form-control" placeholder="lan.tt@mediflow.vn..." v-model="newAccount.email">
+            <div class="col-6 px-1">
+              <div class="p-2 rounded bg-light border text-center">
+                <small class="d-block text-secondary font-weight-bold" style="font-size: 8.5px; letter-spacing: 0.5px;">LOẠI TÀI KHOẢN</small>
+                <span class="font-weight-bold text-dark" style="font-size: 12.5px;">{{ doctorProfile.accountType }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Certifications card -->
+        <div class="card border-0 shadow-sm rounded-lg p-4 bg-white" style="border: 1px solid #e2e8f0 !important;">
+          <h6 class="font-weight-bold text-secondary text-uppercase mb-3" style="font-size: 11px; letter-spacing: 0.5px;">Chứng chỉ & Hoạt động</h6>
+          <div class="d-flex flex-column">
+            <div v-for="cert in doctorProfile.certifications" :key="cert.title" class="d-flex align-items-center mb-3 p-2.5 rounded" :style="{ backgroundColor: cert.bg }">
+              <div class="rounded-circle d-flex align-items-center justify-content-center mr-3" :style="{ width: '38px', height: '38px', backgroundColor: 'white', border: '1px solid rgba(0,0,0,0.05)', color: cert.color }">
+                <i :class="cert.icon"></i>
+              </div>
+              <div>
+                <h6 class="font-weight-bold mb-0.5 text-dark" style="font-size: 13.5px;">{{ cert.title }}</h6>
+                <small class="text-secondary" style="font-size: 11.5px;">{{ cert.detail }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right Column: Personal Information Form -->
+      <div class="col-xl-8 mb-4">
+        <div class="card border-0 shadow-sm rounded-lg p-4 bg-white h-100" style="border: 1px solid #e2e8f0 !important;">
+          <h5 class="font-weight-bold text-dark mb-4" style="font-family: 'Outfit', sans-serif; font-size: 17px; border-left: 4px solid #0f766e; padding-left: 10px;">
+            Thông tin cá nhân
+          </h5>
+
+          <form @submit.prevent="saveChanges">
+            <div class="row">
+              <!-- Full name -->
+              <div class="col-md-6 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Họ và tên</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="doctorProfile.fullName" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+              </div>
+              
+              <!-- National ID -->
+              <div class="col-md-6 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Số CCCD / Hộ chiếu</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="doctorProfile.nationalId" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+              </div>
             </div>
 
             <div class="row">
-              <div class="col-md-6 form-group mb-3">
-                <label class="font-weight-bold text-secondary mb-1" style="font-size: 13px;">Vai trò</label>
-                <select class="form-control" v-model="newAccount.role">
-                  <option value="Bác sĩ chuyên khoa">Bác sĩ chuyên khoa</option>
-                  <option value="Điều dưỡng">Điều dưỡng</option>
-                  <option value="Quản trị viên">Quản trị viên</option>
+              <!-- Gender -->
+              <div class="col-md-4 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Giới tính</label>
+                <select 
+                  class="form-control" 
+                  v-model="doctorProfile.gender" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
                 </select>
               </div>
-              <div class="col-md-6 form-group mb-3">
-                <label class="font-weight-bold text-secondary mb-1" style="font-size: 13px;">Trạng thái khởi tạo</label>
-                <select class="form-control" v-model="newAccount.status">
-                  <option value="active">Kích hoạt ngay</option>
-                  <option value="locked">Khóa tạm thời</option>
-                </select>
+
+              <!-- Date of Birth -->
+              <div class="col-md-4 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Ngày sinh</label>
+                <input 
+                  type="date" 
+                  class="form-control" 
+                  v-model="doctorProfile.dob" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+              </div>
+
+              <!-- Doctor ID (DOC Code) -->
+              <div class="col-md-4 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Mã Bác sĩ</label>
+                <input 
+                  type="text" 
+                  class="form-control bg-light" 
+                  v-model="doctorProfile.doctorId" 
+                  disabled
+                >
               </div>
             </div>
 
-            <div class="form-group mb-0">
-              <label class="font-weight-bold text-secondary mb-1" style="font-size: 13px;">Quyền hạn (phân tách bằng dấu phẩy)</label>
-              <input type="text" class="form-control" placeholder="Ví dụ: Xem hồ sơ, Cập nhật chỉ số..." v-model="newAccount.permissionsStr">
+            <!-- Address -->
+            <div class="form-group mb-3">
+              <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Địa chỉ thường trú</label>
+              <input 
+                type="text" 
+                class="form-control" 
+                v-model="doctorProfile.address" 
+                :disabled="!isEditing"
+                :class="{ 'bg-light': !isEditing }"
+              >
             </div>
-          </div>
-          <div class="modal-footer bg-light border-top py-3">
-            <button type="button" class="btn btn-secondary py-2 px-4 font-weight-bold" style="font-size: 13px;" @click="showModal = false">Đóng</button>
-            <button type="button" class="btn btn-dark py-2 px-4 font-weight-bold" style="font-size: 13px; background-color: #0d9488; border-color: #0d9488;" @click="handleCreate">Lưu thông tin</button>
-          </div>
+
+            <div class="row mb-4">
+              <!-- Specialty -->
+              <div class="col-md-6 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Chuyên khoa</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="doctorProfile.specialty" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+              </div>
+
+              <!-- Department -->
+              <div class="col-md-6 form-group mb-3">
+                <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Khoa / Phòng ban</label>
+                <input 
+                  type="text" 
+                  class="form-control" 
+                  v-model="doctorProfile.department" 
+                  :disabled="!isEditing"
+                  :class="{ 'bg-light': !isEditing }"
+                >
+              </div>
+            </div>
+
+            <!-- Workplace & System visual blocks (Image placeholders) -->
+            <div class="row mb-4">
+              <div class="col-sm-6 mb-3 mb-sm-0">
+                <div class="rounded border p-3 bg-light d-flex align-items-center justify-content-center text-center cursor-pointer hover-shadow" style="height: 120px; flex-direction: column;">
+                  <i class="fas fa-hospital-user fa-2x mb-2 text-secondary" style="opacity: 0.6;"></i>
+                  <span class="font-weight-bold text-dark" style="font-size: 12.5px;">Khu vực làm việc</span>
+                  <small class="text-secondary" style="font-size: 11px;">Xem ảnh chi tiết</small>
+                </div>
+              </div>
+              <div class="col-sm-6">
+                <div class="rounded border p-3 bg-light d-flex align-items-center justify-content-center text-center cursor-pointer hover-shadow" style="height: 120px; flex-direction: column;">
+                  <i class="fas fa-history fa-2x mb-2 text-secondary" style="opacity: 0.6;"></i>
+                  <span class="font-weight-bold text-dark" style="font-size: 12.5px;">Lịch sử hệ thống</span>
+                  <small class="text-secondary" style="font-size: 11px;">Hoạt động gần nhất</small>
+                </div>
+              </div>
+            </div>
+
+            <!-- Form Edit Buttons -->
+            <div v-if="isEditing" class="d-flex justify-content-end border-top pt-3">
+              <button 
+                type="button" 
+                @click="cancelEdit" 
+                class="btn btn-light border mr-2 font-weight-bold px-4 py-2" 
+                style="border-radius: 8px; font-size: 13.5px; background: white;"
+              >
+                Hủy bỏ
+              </button>
+              <button 
+                type="submit" 
+                class="btn text-white font-weight-bold px-4 py-2" 
+                style="background-color: #0f766e; border-radius: 8px; font-size: 13.5px; border: none;"
+              >
+                Lưu thay đổi
+              </button>
+            </div>
+          </form>
         </div>
       </div>
     </div>
 
+    <!-- Tab 2: Change Password View -->
+    <div v-else-if="activeSubTab === 'doi-mat-khau'" class="card border-0 shadow-sm rounded-lg p-4 bg-white" style="border: 1px solid #e2e8f0 !important; max-width: 600px; margin: 0 auto;">
+      <h5 class="font-weight-bold text-dark mb-4" style="font-family: 'Outfit', sans-serif; font-size: 17px;">Đổi mật khẩu tài khoản</h5>
+      
+      <form @submit.prevent="updatePassword">
+        <div class="form-group mb-3">
+          <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Mật khẩu hiện tại</label>
+          <input type="password" class="form-control" placeholder="Nhập mật khẩu hiện tại..." v-model="passwordForm.currentPassword">
+        </div>
+        <div class="form-group mb-3">
+          <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Mật khẩu mới</label>
+          <input type="password" class="form-control" placeholder="Nhập mật khẩu mới..." v-model="passwordForm.newPassword">
+        </div>
+        <div class="form-group mb-4">
+          <label class="font-weight-bold text-secondary mb-1" style="font-size: 12.5px;">Xác nhận mật khẩu mới</label>
+          <input type="password" class="form-control" placeholder="Xác nhận lại mật khẩu mới..." v-model="passwordForm.confirmPassword">
+        </div>
+
+        <button type="submit" class="btn text-white font-weight-bold py-2 w-100" style="background-color: #0f766e; border-radius: 8px; font-size: 14px; border: none;">
+          Cập nhật mật khẩu
+        </button>
+      </form>
+    </div>
+
+    <!-- Tab 3: Notifications & Security View -->
+    <div v-else-if="activeSubTab === 'bao-mat'" class="card border-0 shadow-sm rounded-lg p-4 bg-white" style="border: 1px solid #e2e8f0 !important; max-width: 800px; margin: 0 auto;">
+      <h5 class="font-weight-bold text-dark mb-3" style="font-family: 'Outfit', sans-serif; font-size: 17px;">Thông báo & Cài đặt bảo mật</h5>
+      <p class="text-secondary mb-4" style="font-size: 13.5px;">Cấu hình cách nhận cảnh báo hệ thống và bảo vệ thông tin cá nhân của bạn.</p>
+
+      <div class="list-group list-group-flush">
+        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Xác thực 2 lớp (2FA)</h6>
+            <small class="text-secondary">Yêu cầu mã xác thực OTP gửi qua điện thoại khi đăng nhập từ thiết bị lạ.</small>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="switch2fa" checked>
+            <label class="custom-control-label cursor-pointer" for="switch2fa"></label>
+          </div>
+        </div>
+
+        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Nhận cảnh báo cấp cứu bằng SMS</h6>
+            <small class="text-secondary">Gửi tin nhắn trực tiếp đến số điện thoại đăng ký khi có trường hợp khẩn cấp.</small>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="switchEmergency" checked>
+            <label class="custom-control-label cursor-pointer" for="switchEmergency"></label>
+          </div>
+        </div>
+
+        <div class="list-group-item px-0 py-3 d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="font-weight-bold text-dark mb-1" style="font-size: 14px;">Báo cáo lịch hẹn hàng tuần</h6>
+            <small class="text-secondary">Gửi bản tóm tắt Excel số lượng khám và doanh thu qua email vào mỗi sáng Thứ Hai.</small>
+          </div>
+          <div class="custom-control custom-switch">
+            <input type="checkbox" class="custom-control-input" id="switchReport">
+            <label class="custom-control-label cursor-pointer" for="switchReport"></label>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.transition-all {
-  transition: all 0.3s ease;
+.cursor-pointer {
+  cursor: pointer;
+}
+.bg-white-10 {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+.hover-shadow:hover {
+  filter: brightness(0.95);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
 }
 </style>

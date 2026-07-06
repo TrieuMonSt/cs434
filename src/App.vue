@@ -1,35 +1,25 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref } from 'vue';
 import AdminSidebar from './components/AdminSidebar.vue';
 import AdminHeader from './components/AdminHeader.vue';
 import AdminFooter from './components/AdminFooter.vue';
+import DashboardManagement from './components/DashboardManagement.vue';
+import AppointmentManagement from './components/AppointmentManagement.vue';
 import PatientManagement from './components/PatientManagement.vue';
 import AccountManagement from './components/AccountManagement.vue';
 
-const activeTab = ref('benh-nhan'); // Default tab in image 1 is 'benh-nhan'
-
-const headerTitle = computed(() => {
-  if (activeTab.value === 'benh-nhan') {
-    return 'MediFlow Bệnh nhân';
-  } else if (activeTab.value === 'cai-dat') {
-    return 'MediFlow Cấu hình & Phân quyền';
-  } else if (activeTab.value === 'dashboard') {
-    return 'MediFlow Dashboard';
-  } else if (activeTab.value === 'lich-hen') {
-    return 'MediFlow Lịch hẹn';
-  } else if (activeTab.value === 'nhan-vien') {
-    return 'MediFlow Nhân viên';
-  }
-  return 'MediFlow Admin';
-});
+// Default active tab to 'dashboard'
+const activeTab = ref('dashboard');
 
 const handleSelectTab = (tab) => {
   if (tab === 'logout') {
-    alert('Đăng xuất hệ thống thành công!');
+    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
+      alert('Đăng xuất hệ thống thành công!');
+    }
     return;
   }
   if (tab === 'support') {
-    alert('Đang kết nối tới bộ phận hỗ trợ kỹ thuật...');
+    alert('Đang kết nối tới bộ phận hỗ trợ kỹ thuật MediCare / MediFlow (Hotline: 1900-6080)...');
     return;
   }
   activeTab.value = tab;
@@ -42,30 +32,24 @@ const handleSelectTab = (tab) => {
     <AdminSidebar :active-tab="activeTab" @select-tab="handleSelectTab" />
 
     <!-- Main Right Content Layout -->
-    <div class="d-flex flex-column flex-grow-1" style="min-width: 0;">
+    <div class="d-flex flex-column flex-grow-1 bg-light" style="min-width: 0;">
       <!-- Header Top Layout -->
-      <AdminHeader :title="headerTitle" />
+      <AdminHeader :active-tab="activeTab" />
 
       <!-- Inner content area dynamically loaded -->
-      <div class="flex-grow-1 bg-light" style="overflow-y: auto;">
+      <div class="flex-grow-1" style="overflow-y: auto;">
         
-        <!-- Tab 1: Patient Management -->
-        <PatientManagement v-if="activeTab === 'benh-nhan'" />
+        <!-- Tab 1: Dashboard / Doctor Stats (Màn hình 4) -->
+        <DashboardManagement v-if="activeTab === 'dashboard'" />
 
-        <!-- Tab 2: Account Management -->
+        <!-- Tab 2: Appointment Management (Màn hình 1) -->
+        <AppointmentManagement v-else-if="activeTab === 'lich-hen'" />
+
+        <!-- Tab 3: Patient Management (Màn hình 2) -->
+        <PatientManagement v-else-if="activeTab === 'benh-nhan'" />
+
+        <!-- Tab 4: Account Management (Màn hình 3) -->
         <AccountManagement v-else-if="activeTab === 'cai-dat'" />
-
-        <!-- Other Tabs Placeholder -->
-        <div v-else class="container-fluid px-4 py-5 text-center">
-          <div class="card border-0 shadow-sm rounded-lg p-5">
-            <div class="py-5">
-              <i class="fas fa-tools fa-3x mb-3 text-secondary" style="opacity: 0.5;"></i>
-              <h4 class="font-weight-bold text-dark mb-2">Tính năng đang được phát triển</h4>
-              <p class="text-secondary">Phân hệ này đang được hoàn thiện liên kết dữ liệu.</p>
-              <p class="text-secondary">Vui lòng chuyển sang tab <a href="#" class="font-weight-bold text-decoration-none" style="color: #0d9488;" @click.prevent="activeTab = 'benh-nhan'">Bệnh nhân</a> hoặc <a href="#" class="font-weight-bold text-decoration-none" style="color: #0d9488;" @click.prevent="activeTab = 'cai-dat'">Cài đặt</a> để xem hai trang chức năng chính của Admin.</p>
-            </div>
-          </div>
-        </div>
 
       </div>
 
@@ -81,6 +65,7 @@ body {
   margin: 0;
   padding: 0;
   background-color: #f6f8fb;
+  font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 .cursor-pointer {
   cursor: pointer;
