@@ -1,25 +1,45 @@
 <script setup>
 import { ref } from 'vue';
+import LoginView from './components/LoginView.vue';
 import AdminSidebar from './components/AdminSidebar.vue';
 import AdminHeader from './components/AdminHeader.vue';
-import AdminFooter from './components/AdminFooter.vue';
-import DashboardManagement from './components/DashboardManagement.vue';
-import AppointmentManagement from './components/AppointmentManagement.vue';
 import PatientManagement from './components/PatientManagement.vue';
 import AccountManagement from './components/AccountManagement.vue';
 
-// Default active tab to 'dashboard'
-const activeTab = ref('dashboard');
+// Auth State (Default false to show login screen first)
+const isLoggedIn = ref(false);
+const currentUser = ref({
+  name: 'Quản trị Bệnh viện',
+  role: 'Quản trị',
+  email: 'admin@hospital.test'
+});
 
+// Navigation state
+const activeTab = ref('benh-nhan');
+
+// Login handler
+const handleLoginSuccess = (userData) => {
+  currentUser.value = userData;
+  isLoggedIn.value = true;
+  activeTab.value = 'benh-nhan'; // Default active tab after login
+};
+
+// Logout handler
+const handleLogout = () => {
+  if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
+    isLoggedIn.value = false;
+    currentUser.value = { name: '', role: '', email: '' };
+  }
+};
+
+// Select sidebar tab handler
 const handleSelectTab = (tab) => {
   if (tab === 'logout') {
-    if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
-      alert('Đăng xuất hệ thống thành công!');
-    }
+    handleLogout();
     return;
   }
   if (tab === 'support') {
-    alert('Đang kết nối tới bộ phận hỗ trợ kỹ thuật MediCare / MediFlow (Hotline: 1900-6080)...');
+    alert('Đang kết nối tới tổng đài hỗ trợ vận hành CarePlus (Hotline: 1800-8090)...');
     return;
   }
   activeTab.value = tab;
@@ -27,34 +47,43 @@ const handleSelectTab = (tab) => {
 </script>
 
 <template>
-  <div class="d-flex" style="min-height: 100vh;">
+  <!-- Render Login View when not authenticated -->
+  <LoginView v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+
+  <!-- Render Main Dashboard when authenticated -->
+  <div v-else class="d-flex" style="min-height: 100vh;">
     <!-- Sidebar Left Layout -->
     <AdminSidebar :active-tab="activeTab" @select-tab="handleSelectTab" />
 
     <!-- Main Right Content Layout -->
     <div class="d-flex flex-column flex-grow-1 bg-light" style="min-width: 0;">
       <!-- Header Top Layout -->
-      <AdminHeader :active-tab="activeTab" />
+      <AdminHeader :user="currentUser" @logout="handleLogout" />
 
       <!-- Inner content area dynamically loaded -->
       <div class="flex-grow-1" style="overflow-y: auto;">
         
-        <!-- Tab 1: Dashboard / Doctor Stats (Màn hình 4) -->
-        <DashboardManagement v-if="activeTab === 'dashboard'" />
+        <!-- Tab 3: Patient List (Màn hình 1) -->
+        <PatientManagement v-if="activeTab === 'benh-nhan'" />
 
-        <!-- Tab 2: Appointment Management (Màn hình 1) -->
-        <AppointmentManagement v-else-if="activeTab === 'lich-hen'" />
+        <!-- Tab 7: Profile / Account Settings (Màn hình 2) -->
+        <AccountManagement v-else-if="activeTab === 'ho-so'" />
 
-        <!-- Tab 3: Patient Management (Màn hình 2) -->
-        <PatientManagement v-else-if="activeTab === 'benh-nhan'" />
-
-        <!-- Tab 4: Account Management (Màn hình 3) -->
-        <AccountManagement v-else-if="activeTab === 'cai-dat'" />
+        <!-- Other placeholder tabs -->
+        <div v-else class="container-fluid px-4 py-5 text-center my-auto">
+          <div class="card border-0 shadow-sm rounded-lg p-5 bg-white" style="border: 1px solid #e2e8f0 !important; border-radius: 12px; max-width: 700px; margin: 40px auto;">
+            <div class="py-5">
+              <div class="rounded-circle d-flex align-items-center justify-content-center bg-light mx-auto mb-4" style="width: 80px; height: 80px; color: #64748b;">
+                <i class="fas fa-tools fa-2x"></i>
+              </div>
+              <h4 class="font-weight-bold text-dark mb-2">Phân hệ đang được hoàn thiện</h4>
+              <p class="text-secondary">Chức năng liên kết dữ liệu của phần này đang được đồng bộ hóa.</p>
+              <p class="text-secondary mb-0">Vui lòng chuyển sang tab <a href="#" class="font-weight-bold text-decoration-none" style="color: #0891b2;" @click.prevent="activeTab = 'benh-nhan'">Bệnh nhân</a> hoặc <a href="#" class="font-weight-bold text-decoration-none" style="color: #0891b2;" @click.prevent="activeTab = 'ho-so'">Hồ sơ</a> để kiểm tra giao diện chính.</p>
+            </div>
+          </div>
+        </div>
 
       </div>
-
-      <!-- Footer Bottom Layout -->
-      <AdminFooter />
     </div>
   </div>
 </template>
@@ -64,8 +93,10 @@ const handleSelectTab = (tab) => {
 body {
   margin: 0;
   padding: 0;
-  background-color: #f6f8fb;
+  background-color: #f8fafc;
   font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 .cursor-pointer {
   cursor: pointer;

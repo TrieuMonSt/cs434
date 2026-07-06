@@ -2,114 +2,85 @@
 import { computed } from 'vue';
 
 const props = defineProps({
-  activeTab: {
-    type: String,
-    required: true
+  user: {
+    type: Object,
+    default: () => ({
+      name: 'Quản trị Bệnh viện',
+      role: 'Quản trị',
+      email: 'admin@hospital.test'
+    })
   }
 });
 
-// Dynamic doctor profile for header based on active tab matching screenshots
-const doctorProfile = computed(() => {
-  switch (props.activeTab) {
-    case 'lich-hen':
+const emit = defineEmits(['logout']);
+
+const roleBadgeStyle = computed(() => {
+  switch (props.user.role) {
+    case 'Quản trị':
       return {
-        name: 'BS. Chu Văn Minh',
-        role: 'Bác sĩ chuyên khoa',
-        avatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=100&h=100'
+        backgroundColor: '#ffedd5',
+        color: '#c2410c'
       };
-    case 'benh-nhan':
+    case 'Bác sĩ':
       return {
-        name: 'BS. Sarah Mitchell',
-        role: 'Trưởng khoa Tim mạch',
-        avatar: 'https://images.unsplash.com/photo-1594824813573-246434de83fb?auto=format&fit=crop&q=80&w=100&h=100'
+        backgroundColor: '#ccfbf1',
+        color: '#0f766e'
       };
-    case 'cai-dat':
-      return {
-        name: 'BS. Nguyễn Thành An',
-        role: 'Quản trị viên',
-        avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=100&h=100'
-      };
-    case 'dashboard':
     default:
       return {
-        name: 'BS. Sarah Jenkins',
-        role: 'Trưởng khoa Ngoại',
-        avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=100&h=100'
+        backgroundColor: '#e0f2fe',
+        color: '#0369a1'
       };
   }
 });
 
-// Dynamic search placeholder depending on active view
-const searchPlaceholder = computed(() => {
-  switch (props.activeTab) {
-    case 'lich-hen':
-      return 'Tìm kiếm bệnh nhân, mã hồ sơ...';
-    case 'benh-nhan':
-      return 'Tìm kiếm bệnh nhân, tiểu sử hoặc ID...';
-    case 'cai-dat':
-      return 'Tìm kiếm hồ sơ...';
-    case 'dashboard':
-    default:
-      return 'Tìm kiếm bệnh nhân, hồ sơ hoặc nhân viên...';
-  }
-});
+const handleLogout = () => {
+  emit('logout');
+};
 </script>
 
 <template>
-  <header class="navbar navbar-expand navbar-light bg-white border-bottom shadow-sm px-4 py-2 sticky-top" style="height: 70px;">
-    <!-- Left side: Adaptive Search Input Box -->
-    <div class="d-flex align-items-center flex-grow-1">
-      <form class="form-inline mr-auto d-none d-md-flex position-relative" style="width: 360px;" @submit.prevent>
-        <i class="fas fa-search position-absolute text-muted" style="left: 15px; top: 12px;"></i>
-        <input 
-          class="form-control bg-light border-0 pl-5 pr-4" 
-          type="search" 
-          :placeholder="searchPlaceholder" 
-          style="font-size: 13px; height: 38px; width: 100%; border-radius: 20px;"
-        >
-      </form>
+  <header class="navbar navbar-expand navbar-light bg-white border-bottom shadow-sm px-4 py-2 d-flex justify-content-between align-items-center" style="height: 65px; position: sticky; top: 0; z-index: 99;">
+    <!-- Welcome User Left Block -->
+    <div class="text-left">
+      <small class="text-secondary font-weight-bold d-block" style="font-size: 10px; opacity: 0.8; letter-spacing: 0.5px; line-height: 1;">Xin chào</small>
+      <h5 class="font-weight-bold text-dark mb-0 mt-0.5" style="font-family: 'Outfit', sans-serif; font-size: 17px; letter-spacing: -0.3px;">{{ user.name }}</h5>
     </div>
 
-    <!-- Right side: Utility Icons & Dynamic User Doctor Profile -->
+    <!-- Right Controls Block -->
     <div class="d-flex align-items-center">
-      <!-- Notification Icon -->
-      <a class="text-secondary p-2 rounded-circle hover-bg-light mr-3 position-relative" href="#" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
-        <i class="far fa-bell fa-lg"></i>
-        <span class="position-absolute bg-danger rounded-circle" style="width: 6px; height: 6px; right: 10px; top: 10px;"></span>
-      </a>
+      <!-- Role Badge -->
+      <span 
+        class="badge px-3 py-1.5 font-weight-bold mr-3" 
+        :style="{ 
+          backgroundColor: roleBadgeStyle.backgroundColor, 
+          color: roleBadgeStyle.color,
+          fontSize: '11px',
+          borderRadius: '20px'
+        }"
+      >
+        {{ user.role }}
+      </span>
 
-      <!-- Gear / Message Icon -->
-      <a class="text-secondary p-2 rounded-circle hover-bg-light mr-4" href="#" style="width: 38px; height: 38px; display: flex; align-items: center; justify-content: center;">
-        <i class="fas fa-cog fa-lg"></i>
-      </a>
-
-      <!-- User Doctor Profile info block -->
-      <div class="d-flex align-items-center border-left pl-4" style="height: 40px;">
-        <div class="text-right mr-3 d-none d-sm-block">
-          <h6 class="font-weight-bold mb-0 text-dark" style="font-size: 13.5px; font-family: 'Outfit', sans-serif;">{{ doctorProfile.name }}</h6>
-          <small class="text-secondary font-weight-bold" style="font-size: 10px;">{{ doctorProfile.role }}</small>
-        </div>
-        
-        <div class="position-relative">
-          <img 
-            :src="doctorProfile.avatar" 
-            alt="Doctor profile avatar" 
-            class="rounded-circle border"
-            style="width: 38px; height: 38px; object-fit: cover;"
-          >
-          <span 
-            class="position-absolute rounded-circle bg-success"
-            style="width: 9px; height: 9px; right: 0; bottom: 0; border: 2px solid white;"
-          ></span>
-        </div>
-      </div>
+      <!-- Logout Button -->
+      <button 
+        @click="handleLogout" 
+        class="btn btn-outline-secondary d-flex align-items-center font-weight-bold px-3 py-1.5 text-dark hover-danger border" 
+        style="font-size: 12.5px; border-radius: 8px; border-color: #cbd5e1 !important; background: #fff;"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor" style="width: 14px; height: 14px;" class="mr-1.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+        </svg>
+        <span>Đăng xuất</span>
+      </button>
     </div>
   </header>
 </template>
 
 <style scoped>
-.hover-bg-light:hover {
-  background-color: #f1f5f9;
-  text-decoration: none;
+.hover-danger:hover {
+  background-color: #fef2f2 !important;
+  color: #b91c1c !important;
+  border-color: #fca5a5 !important;
 }
 </style>
