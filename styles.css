@@ -1,0 +1,179 @@
+/* Global Resets & Typography */
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f8fafc;
+  font-family: 'Plus Jakarta Sans', 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 14px;
+}
+.cursor-pointer {
+  cursor: pointer;
+}
+.transition-all {
+  transition: all 0.2s ease;
+}
+.hover-shadow:hover {
+  filter: brightness(0.95);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+.hover-bg-light:hover {
+  background-color: #f1f5f9;
+  cursor: pointer;
+}
+
+/* Sidebar & Active Navigation Items */
+.sidebar {
+  width: 250px;
+  min-height: 100vh;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background-color: #fff;
+  border-right: 1px solid #e2e8f0;
+}
+.nav-link {
+  font-size: 13.5px;
+  border-radius: 8px;
+  margin-bottom: 6px;
+}
+.nav-link:not(.active-link):hover {
+  background-color: #f8fafc !important;
+  color: #0d9488 !important;
+}
+.nav-link.active-link:hover {
+  background-color: #0b5952 !important;
+  color: #ffffff !important;
+}
+
+/* Patients Page Table styling */
+.hover-row {
+  transition: all 0.2s ease;
+}
+.hover-row:hover {
+  background-color: #f8fafc;
+}
+.selected-row {
+  background-color: #e0f2fe40 !important;
+}
+.btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  outline: none;
+}
+.btn-action:hover {
+  filter: brightness(0.95);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.form-input {
+  height: 38px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+}
+.form-input:focus {
+  border-color: #0891b2;
+  box-shadow: 0 0 0 2px rgba(8, 145, 178, 0.1);
+  outline: none;
+}
+
+/* Doctor Management rows */
+.doctor-row {
+  transition: all 0.2s ease;
+  border-color: #f1f5f9 !important;
+}
+.doctor-row:hover {
+  background-color: #f8fafc;
+}
+.text-teal-custom {
+  color: #0d9488;
+}
+.gap-2 {
+  gap: 8px;
+}
+.gap-3 {
+  gap: 12px;
+}
+.btn-schedule {
+  background-color: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #dbeafe;
+}
+.btn-schedule:hover {
+  background-color: #dbeafe;
+  color: #1d4ed8;
+}
+.btn-detail {
+  background-color: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #dcfce7;
+}
+.btn-detail:hover {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+.shadow-xs {
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+/* Login View background styles */
+.login-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0f766e 0%, #134e4a 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background-color: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+  padding: 40px 35px;
+}
+
+/* Floating Action Button (FAB) */
+.fab-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 50px;
+  height: 50px;
+  background-color: #0f766e;
+  border: none;
+  color: #fff;
+  z-index: 1000;
+}
+
+/* Responsiveness details */
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+  .doctor-row {
+    align-items: flex-start !important;
+  }
+}
+
+/* Hospital Utility Classes to replace inline styles */
+.h-card {
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 12px;
+}
+.overlay-modal {
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 1040;
+}
+.modal-content-custom {
+  border-radius: 16px;
+  overflow: hidden;
+}
+.modal-title-font {
+  font-size: 16px;
+  font-family: 'Outfit', sans-serif;
+}
