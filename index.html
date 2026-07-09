@@ -1,2229 +1,680 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
-
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hệ thống Quản lý - Xếp lịch, Đặt lịch & Hủy lịch Hospital</title>
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-  <!-- Bootstrap 5 CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
-
-  <style>
-    :root {
-      --primary-color: #0d6efd;
-      --dark-blue: #003366;
-      --sidebar-width: 260px;
-      --bg-gray: #f6f8fb;
-      --text-dark: #0f172a;
-      --text-muted: #64748b;
-      --border-color: #e2e8f0;
-    }
-
-    body {
-      font-family: 'Plus Jakarta Sans', sans-serif;
-      background-color: var(--bg-gray);
-      color: var(--text-dark);
-      overflow-x: hidden;
-    }
-
-    /* Global View Switcher Styles */
-    .view-switcher-pill {
-      display: flex;
-      background-color: #f1f5f9;
-      padding: 4px;
-      border-radius: 50px;
-      border: 1px solid #e2e8f0;
-    }
-
-    .switcher-btn {
-      border: none;
-      background: none;
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .switcher-btn.active {
-      background-color: var(--dark-blue);
-      color: white;
-      box-shadow: 0 2px 6px rgba(0, 51, 102, 0.25);
-    }
-
-    /* Sidebar Layout & Styles */
-    .sidebar {
-      width: var(--sidebar-width);
-      min-width: var(--sidebar-width);
-      height: 100vh;
-      position: fixed;
-      top: 0;
-      left: 0;
-      background-color: #ffffff;
-      border-right: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      z-index: 1000;
-      padding: 24px;
-      transition: all 0.3s ease;
-    }
-
-    .brand-section {
-      display: flex;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-
-    .brand-logo-container {
-      width: 42px;
-      height: 42px;
-      background-color: var(--primary-color);
-      border-radius: 10px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-right: 12px;
-      box-shadow: 0 4px 10px rgba(13, 110, 253, 0.2);
-    }
-
-    .brand-logo-container i {
-      color: white;
-      font-size: 20px;
-    }
-
-    .brand-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      line-height: 1.2;
-    }
-
-    .brand-subtitle {
-      font-size: 12px;
-      color: var(--text-muted);
-      display: block;
-    }
-
-    .nav-menu {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .nav-item-custom {
-      margin-bottom: 8px;
-    }
-
-    .nav-link-custom {
-      display: flex;
-      align-items: center;
-      padding: 12px 16px;
-      color: var(--text-muted);
-      text-decoration: none;
-      border-radius: 12px;
-      font-weight: 500;
-      font-size: 14px;
-      transition: all 0.2s ease-in-out;
-    }
-
-    .nav-link-custom i {
-      font-size: 18px;
-      margin-right: 12px;
-    }
-
-    .nav-link-custom:hover {
-      background-color: #f1f5f9;
-      color: var(--text-dark);
-    }
-
-    .nav-link-custom.active {
-      background-color: #e0f2fe;
-      color: #0284c7;
-      font-weight: 600;
-    }
-
-    .btn-add-schedule {
-      background-color: var(--dark-blue);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-weight: 600;
-      font-size: 15px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: auto;
-      margin-bottom: 24px;
-      box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
-      transition: all 0.2s ease;
-    }
-
-    .btn-add-schedule:hover {
-      background-color: #002244;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 51, 102, 0.3);
-    }
-
-    .sidebar-footer {
-      border-top: 1px solid var(--border-color);
-      padding-top: 16px;
-    }
-
-    /* Main Content Layout */
-    .main-wrapper {
-      margin-left: var(--sidebar-width);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .main-wrapper.full-width {
-      margin-left: 0;
-    }
-
-    /* Top Header */
-    .header-main {
-      height: 70px;
-      background-color: #ffffff;
-      border-bottom: 1px solid var(--border-color);
-      padding: 0 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      z-index: 999;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 32px;
-    }
-
-    .header-title {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin: 0;
-    }
-
-    .header-nav {
-      display: flex;
-      gap: 20px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
-    }
-
-    .header-nav-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 14px;
-      font-weight: 500;
-      padding: 24px 0;
-      position: relative;
-      transition: color 0.2s;
-    }
-
-    .header-nav-link:hover {
-      color: var(--text-dark);
-    }
-
-    .header-nav-link.active {
-      color: var(--primary-color);
-      font-weight: 600;
-    }
-
-    .header-nav-link.active::after {
-      content: '';
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 3px;
-      background-color: var(--primary-color);
-      border-radius: 3px 3px 0 0;
-    }
-
-    .search-box {
-      position: relative;
-      width: 260px;
-    }
-
-    .search-box input {
-      background-color: #f1f5f9;
-      border: none;
-      border-radius: 50px;
-      padding: 8px 16px 8px 40px;
-      font-size: 14px;
-      width: 100%;
-      color: var(--text-dark);
-      transition: all 0.2s;
-    }
-
-    .search-box input:focus {
-      outline: none;
-      background-color: #e2e8f0;
-      box-shadow: 0 0 0 2px rgba(13, 110, 253, 0.15);
-    }
-
-    .search-box i {
-      position: absolute;
-      left: 14px;
-      top: 50%;
-      transform: translateY(-50%);
-      color: var(--text-muted);
-      font-size: 14px;
-    }
-
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .icon-btn {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      font-size: 20px;
-      position: relative;
-      padding: 4px;
-      border-radius: 8px;
-      transition: all 0.2s;
-    }
-
-    .icon-btn:hover {
-      color: var(--text-dark);
-      background-color: #f1f5f9;
-    }
-
-    .icon-btn .badge-dot {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      width: 8px;
-      height: 8px;
-      background-color: #ef4444;
-      border-radius: 50%;
-      border: 2px solid white;
-    }
-
-    .user-avatar {
-      width: 38px;
-      height: 38px;
-      border-radius: 50%;
-      object-fit: cover;
-      cursor: pointer;
-      border: 2px solid #e2e8f0;
-    }
-
-    /* Body Grid Area */
-    .content-body {
-      padding: 32px;
-      display: flex;
-      gap: 32px;
-      flex: 1;
-    }
-
-    /* Filter Column (Left) */
-    .filter-col {
-      width: 280px;
-      min-width: 280px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .section-title-icon {
-      font-size: 16px;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 0;
-    }
-
-    .filter-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-muted);
-      margin-bottom: 8px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .custom-select-wrapper select {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid var(--border-color);
-      border-radius: 12px;
-      font-size: 14px;
-      color: var(--text-dark);
-      background-color: white;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-
-    .custom-select-wrapper select:focus {
-      border-color: var(--primary-color);
-    }
-
-    .doctor-checkbox-list {
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-
-    .doctor-checkbox-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .doctor-checkbox-item input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
-      border: 1.5px solid #cbd5e1;
-      cursor: pointer;
-    }
-
-    .room-badges-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .room-badge {
-      padding: 6px 12px;
-      font-size: 13px;
-      font-weight: 600;
-      text-align: center;
-      border-radius: 50px;
-      cursor: pointer;
-      border: 1.5px solid var(--border-color);
-      background-color: white;
-      color: var(--text-muted);
-      transition: all 0.2s;
-    }
-
-    .room-badge:hover {
-      background-color: #f8fafc;
-      border-color: var(--text-muted);
-    }
-
-    .room-badge.active {
-      background-color: #3b82f6;
-      border-color: #3b82f6;
-      color: white;
-    }
-
-    .stats-card {
-      background-color: #e0f2fe;
-      border-radius: 16px;
-      padding: 20px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      box-shadow: 0 4px 12px rgba(14, 165, 233, 0.08);
-    }
-
-    .stats-card-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #0369a1;
-      margin-bottom: 4px;
-    }
-
-    .stats-card-value {
-      font-size: 38px;
-      font-weight: 800;
-      color: #0369a1;
-      line-height: 1.1;
-    }
-
-    .stats-card-subtext {
-      font-size: 12px;
-      color: #0284c7;
-      margin-top: 4px;
-      font-weight: 500;
-    }
-
-    /* Calendar Area (Right) */
-    .calendar-container {
-      flex: 1;
-      background-color: white;
-      border-radius: 20px;
-      border: 1px solid var(--border-color);
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Calendar Header Control Bar */
-    .calendar-control-bar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-    }
-
-    .calendar-current-month {
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin: 0;
-    }
-
-    .calendar-nav-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-nav-cal {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      border: 1.5px solid var(--border-color);
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--text-dark);
-      transition: all 0.2s;
-    }
-
-    .btn-nav-cal:hover {
-      background-color: #f1f5f9;
-      border-color: #cbd5e1;
-    }
-
-    .btn-today {
-      padding: 6px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      border-radius: 50px;
-      border: 1.5px solid var(--border-color);
-      background: white;
-      color: var(--text-dark);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-today:hover {
-      background-color: #f1f5f9;
-    }
-
-    .view-toggle-group {
-      display: flex;
-      background-color: #f1f5f9;
-      padding: 4px;
-      border-radius: 12px;
-    }
-
-    .btn-toggle-view {
-      border: none;
-      background: none;
-      padding: 6px 16px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-muted);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-toggle-view.active {
-      background-color: var(--dark-blue);
-      color: white;
-      box-shadow: 0 2px 6px rgba(0, 51, 102, 0.15);
-    }
-
-    /* Calendar Grid */
-    .calendar-wrapper {
-      display: flex;
-      flex-direction: column;
-      flex: 1;
-      overflow-x: auto;
-    }
-
-    /* Header of Week */
-    .calendar-week-header {
-      display: flex;
-      border-bottom: 1.5px solid var(--border-color);
-      padding-bottom: 12px;
-      margin-bottom: 8px;
-    }
-
-    .time-header-spacer {
-      width: 70px;
-      min-width: 70px;
-    }
-
-    .day-header {
-      flex: 1;
-      text-align: center;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-muted);
-    }
-
-    .day-header.active-day-header {
-      color: var(--primary-color);
-      font-weight: 700;
-    }
-
-    /* Grid Core */
-    .calendar-grid {
-      display: flex;
-      position: relative;
-      min-height: 550px;
-    }
-
-    /* Time column Labels */
-    .time-labels-column {
-      width: 70px;
-      min-width: 70px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .time-label-cell {
-      height: 100px;
-      font-size: 13px;
-      color: var(--text-muted);
-      font-weight: 500;
-      padding-top: 4px;
-    }
-
-    /* Columns representing each day */
-    .day-columns-container {
-      display: flex;
-      flex: 1;
-      position: relative;
-      background-image: linear-gradient(to bottom, var(--border-color) 1px, transparent 1px);
-      background-size: 100% 100px;
-    }
-
-    .calendar-day-column {
-      flex: 1;
-      position: relative;
-      border-left: 1px solid var(--border-color);
-      min-width: 100px;
-    }
-
-    .calendar-day-column:last-child {
-      border-right: 1px solid var(--border-color);
-    }
-
-    .calendar-day-column.active-day-column {
-      background-color: rgba(13, 110, 253, 0.02);
-    }
-
-    /* Hour segment helper borders inside columns */
-    .hour-slot-marker {
-      height: 100px;
-      border-bottom: 1px solid #f1f5f9;
-      box-sizing: border-box;
-    }
-
-    /* Schedule Cards */
-    .schedule-event-card {
-      position: absolute;
-      left: 8px;
-      right: 8px;
-      border-radius: 8px;
-      padding: 10px;
-      font-size: 12px;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.04);
-      transition: all 0.2s ease;
-      cursor: pointer;
-      z-index: 10;
-      overflow: hidden;
-    }
-
-    .schedule-event-card:hover {
-      transform: scale(1.02);
-      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
-      z-index: 20;
-    }
-
-    /* Card Variant 1: Light blue/purple style */
-    .card-blue {
-      background-color: #e0f2fe;
-      border-left: 4px solid #0284c7;
-      color: #0369a1;
-    }
-
-    /* Card Variant 2: Gray style */
-    .card-gray {
-      background-color: #f1f5f9;
-      border-left: 4px solid #475569;
-      color: #334155;
-    }
-
-    .event-title {
-      font-weight: 700;
-      font-size: 13px;
-      margin-bottom: 4px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .event-time {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 11px;
-      font-weight: 500;
-      margin-bottom: 6px;
-    }
-
-    .event-tag {
-      font-weight: 700;
-      font-size: 10px;
-      text-transform: uppercase;
-      margin-top: auto;
-    }
-
-    .urgent-badge {
-      background-color: #fee2e2;
-      color: #ef4444;
-      padding: 2px 6px;
-      border-radius: 4px;
-      font-weight: 800;
-      font-size: 9px;
-      align-self: flex-start;
-      margin-top: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    /* =========================================
-         PATIENT VIEW STYLES
-         ========================================= */
-    .patient-container {
-      padding: 32px 60px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .patient-main-content {
-      display: flex;
-      gap: 32px;
-    }
-
-    .booking-section {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 32px;
-    }
-
-    /* Specialization Cards */
-    .specialization-row {
-      display: grid;
-      grid-template-columns: repeat(6, 1fr);
-      gap: 16px;
-    }
-
-    .spec-card {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 20px 10px;
-      text-align: center;
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 12px;
-      transition: all 0.2s;
-    }
-
-    .spec-card:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.05);
-      border-color: #cbd5e1;
-    }
-
-    .spec-icon-wrapper {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-    }
-
-    .spec-icon-blue {
-      background-color: #eff6ff;
-      color: #3b82f6;
-    }
-
-    .spec-icon-green {
-      background-color: #f0fdf4;
-      color: #16a34a;
-    }
-
-    .spec-name {
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    /* Suggested Doctors */
-    .doctors-row {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-    }
-
-    .doc-card {
-      background: white;
-      border: 1.5px solid var(--border-color);
-      border-radius: 16px;
-      padding: 20px;
-      cursor: pointer;
-      transition: all 0.2s;
-      position: relative;
-    }
-
-    .doc-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-    }
-
-    .doc-card.active {
-      border-color: var(--primary-color);
-      box-shadow: 0 4px 18px rgba(13, 110, 253, 0.08);
-    }
-
-    .doc-badge {
-      font-size: 10px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 50px;
-      display: inline-block;
-      margin-bottom: 12px;
-    }
-
-    .doc-badge-blue {
-      background-color: #eff6ff;
-      color: #3b82f6;
-    }
-
-    .doc-badge-green {
-      background-color: #f0fdf4;
-      color: #16a34a;
-    }
-
-    .doc-name {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 4px;
-    }
-
-    .doc-exp {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-    }
-
-    .doc-rating {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      font-weight: 600;
-    }
-
-    .doc-rating i {
-      color: #f59e0b;
-    }
-
-    .doc-rating span {
-      color: var(--text-muted);
-      font-weight: 400;
-    }
-
-    /* Date & Time Slot Selector Row */
-    .datetime-row {
-      display: grid;
-      grid-template-columns: 1fr 1.2fr;
-      gap: 24px;
-    }
-
-    .booking-card {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
-    }
-
-    .booking-card-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin-bottom: 20px;
-    }
-
-    /* Mini Calendar Picker */
-    .mini-calendar-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 16px;
-    }
-
-    .mini-calendar-month {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    .mini-calendar-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
-      text-align: center;
-    }
-
-    .mini-cal-day-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      padding-bottom: 6px;
-    }
-
-    .mini-cal-date {
-      height: 34px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 600;
-      border-radius: 50%;
-      cursor: pointer;
-      transition: all 0.15s;
-      color: var(--text-dark);
-    }
-
-    .mini-cal-date:hover {
-      background-color: #f1f5f9;
-    }
-
-    .mini-cal-date.muted {
-      color: #cbd5e1;
-    }
-
-    .mini-cal-date.active {
-      background-color: var(--dark-blue);
-      color: white;
-      box-shadow: 0 2px 8px rgba(0, 51, 102, 0.25);
-    }
-
-    /* Time Slots Button Group */
-    .time-slot-section-title {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      margin-bottom: 12px;
-      text-transform: uppercase;
-    }
-
-    .time-slots-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .time-slot-btn {
-      background-color: white;
-      border: 1.5px solid var(--border-color);
-      padding: 10px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--text-dark);
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .time-slot-btn:hover {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
-    }
-
-    .time-slot-btn.active {
-      background-color: #e0f2fe;
-      border-color: #3b82f6;
-      color: #0284c7;
-      font-weight: 700;
-    }
-
-    /* Right Summary Column */
-    .summary-col {
-      width: 340px;
-      min-width: 340px;
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 20px;
-      padding: 24px;
-      box-shadow: 0 4px 18px rgba(15, 23, 42, 0.03);
-      align-self: flex-start;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .summary-title {
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text-dark);
-      margin: 0;
-    }
-
-    .summary-item {
-      display: flex;
-      gap: 16px;
-    }
-
-    .summary-icon-box {
-      width: 42px;
-      height: 42px;
-      min-width: 42px;
-      border-radius: 50%;
-      background-color: #f1f5f9;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-muted);
-      font-size: 18px;
-    }
-
-    .summary-item-content {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .summary-item-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .summary-item-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    .summary-item-subtext {
-      font-size: 12px;
-      color: var(--text-muted);
-      margin-top: 1px;
-    }
-
-    .price-val {
-      font-size: 16px;
-      font-weight: 800;
-      color: var(--text-dark);
-    }
-
-    .summary-divider {
-      border-top: 1px solid var(--border-color);
-    }
-
-    .terms-checkbox {
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-      font-size: 12px;
-      color: var(--text-muted);
-      line-height: 1.4;
-      cursor: pointer;
-    }
-
-    .terms-checkbox input {
-      margin-top: 2px;
-      width: 16px;
-      height: 16px;
-      border-radius: 4px;
-      border: 1.5px solid #cbd5e1;
-    }
-
-    .btn-confirm-booking {
-      background-color: var(--dark-blue);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      padding: 14px;
-      font-weight: 700;
-      font-size: 15px;
-      width: 100%;
-      box-shadow: 0 4px 12px rgba(0, 51, 102, 0.2);
-      transition: all 0.2;
-    }
-
-    .btn-confirm-booking:hover {
-      background-color: #002244;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 16px rgba(0, 51, 102, 0.3);
-    }
-
-    /* =========================================
-         CANCELLATION VIEW STYLES
-         ========================================= */
-    .cancellation-container {
-      max-width: 760px;
-      margin: 0 auto;
-      padding: 32px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 24px;
-    }
-
-    .back-link {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--primary-color);
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      transition: transform 0.2s;
-    }
-
-    .back-link:hover {
-      transform: translateX(-4px);
-    }
-
-    .cancellation-card {
-      background: white;
-      border: 1px solid var(--border-color);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.02);
-    }
-
-    /* Doctor info subcard */
-    .appointment-info-subcard {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      padding-bottom: 20px;
-      margin-bottom: 20px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .doctor-avatar-box {
-      width: 48px;
-      height: 48px;
-      border-radius: 12px;
-      background-color: #e0f2fe;
-      color: #0369a1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 22px;
-      margin-right: 16px;
-    }
-
-    .appointment-id-badge {
-      background-color: #eff6ff;
-      color: #2563eb;
-      font-size: 11px;
-      font-weight: 700;
-      padding: 4px 10px;
-      border-radius: 50px;
-      letter-spacing: 0.5px;
-    }
-
-    .info-details-list {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .info-details-item {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-    }
-
-    .info-details-icon {
-      color: var(--text-muted);
-      font-size: 18px;
-      margin-top: 2px;
-    }
-
-    .info-details-content {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .info-details-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 2px;
-    }
-
-    .info-details-val {
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text-dark);
-    }
-
-    /* Cancellation reason options */
-    .reason-radio-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-      margin-bottom: 20px;
-    }
-
-    .reason-radio-card {
-      background-color: white;
-      border: 1.5px solid var(--border-color);
-      padding: 16px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .reason-radio-card:hover {
-      background-color: #f8fafc;
-      border-color: #cbd5e1;
-    }
-
-    /* Modern visual indicator for selected state */
-    .reason-radio-card:has(input:checked) {
-      border-color: var(--primary-color);
-      background-color: #eff6ff;
-    }
-
-    .reason-radio-card input[type="radio"] {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-      accent-color: var(--primary-color);
-    }
-
-    .reason-radio-card span {
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-dark);
-    }
-
-    .textarea-label {
-      font-size: 11px;
-      font-weight: 700;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      margin-bottom: 8px;
-      letter-spacing: 0.5px;
-    }
-
-    .custom-textarea {
-      width: 100%;
-      border: 1.5px solid var(--border-color);
-      border-radius: 12px;
-      padding: 12px 16px;
-      font-size: 14px;
-      outline: none;
-      transition: border-color 0.2s;
-      resize: none;
-      height: 100px;
-    }
-
-    .custom-textarea:focus {
-      border-color: var(--primary-color);
-    }
-
-    /* Alert card */
-    .policy-alert-card {
-      background-color: #fee2e2;
-      border-left: 4px solid #ef4444;
-      border-radius: 12px;
-      padding: 16px 20px;
-      display: flex;
-      gap: 14px;
-    }
-
-    .policy-alert-icon {
-      color: #ef4444;
-      font-size: 20px;
-      margin-top: 2px;
-    }
-
-    .policy-alert-content {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .policy-alert-title {
-      font-size: 11px;
-      font-weight: 800;
-      color: #b91c1c;
-      text-transform: uppercase;
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    .policy-alert-text {
-      font-size: 13px;
-      font-weight: 500;
-      color: #991b1b;
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    /* Cancellation footer buttons */
-    .cancellation-footer-btns {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      margin-top: 12px;
-    }
-
-    .btn-cancel-action-outline {
-      background-color: white;
-      border: 1.5px solid var(--border-color);
-      color: var(--text-muted);
-      padding: 12px 32px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .btn-cancel-action-outline:hover {
-      background-color: #f1f5f9;
-      color: var(--text-dark);
-    }
-
-    .btn-cancel-action-danger {
-      background-color: #991b1b;
-      color: white;
-      border: none;
-      padding: 12px 32px;
-      border-radius: 12px;
-      font-weight: 700;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(153, 27, 27, 0.15);
-    }
-
-    .btn-cancel-action-danger:hover {
-      background-color: #7f1d1d;
-      transform: translateY(-1px);
-      box-shadow: 0 6px 16px rgba(153, 27, 27, 0.25);
-    }
-
-    /* Custom scrollbars */
-    ::-webkit-scrollbar {
-      width: 6px;
-      height: 6px;
-    }
-
-    ::-webkit-scrollbar-track {
-      background: transparent;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: #cbd5e1;
-      border-radius: 4px;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: #94a3b8;
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CarePlus Hospital OS</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:#f3f4f6;color:#1f2937;}
+  /* LOGIN PAGE */
+  .login-page{display:flex;height:100vh;}
+  .login-left{flex:1;display:flex;align-items:center;justify-content:center;background:#fff;padding:40px;}
+  .login-right{flex:1;background:linear-gradient(rgba(0,0,0,.45),rgba(0,0,0,.45)),url('https://images.unsplash.com/photo-1587351021759-3e566b6af7cc?w=900') center/cover;display:flex;align-items:center;justify-content:center;color:#fff;padding:60px;}
+  .login-right h1{font-size:2.8rem;line-height:1.2;}
+  .login-right p{font-size:1.1rem;margin-bottom:16px;opacity:.85;}
+  .login-box{max-width:400px;width:100%;}
+  .login-box .logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+  .login-box .logo .icon{width:40px;height:40px;background:#0d9488;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;}
+  .login-box .logo span{font-weight:700;font-size:1.1rem;color:#1f2937;}
+  .login-box .logo small{display:block;font-size:.75rem;color:#6b7280;font-weight:400;}
+  .login-box .tag{color:#0d9488;font-size:.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+  .login-box h2{font-size:2rem;margin:8px 0 24px;color:#1f2937;}
+  .form-group{margin-bottom:18px;}
+  .form-group label{display:block;font-size:.85rem;font-weight:500;color:#374151;margin-bottom:6px;}
+  .form-group input,.form-group select,.form-group textarea{width:100%;padding:10px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.95rem;outline:none;transition:border .2s;}
+  .form-group input:focus,.form-group select:focus,.form-group textarea:focus{border-color:#0d9488;}
+  .btn{padding:10px 20px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;transition:all .2s;}
+  .btn-primary{background:#0d9488;color:#fff;width:100%;justify-content:center;}
+  .btn-primary:hover{background:#0f766e;}
+  .btn-outline{background:#fff;color:#374151;border:1.5px solid #d1d5db;}
+  .btn-outline:hover{background:#f9fafb;}
+  .btn-sm{padding:6px 14px;font-size:.85rem;}
+  .btn-danger{background:#ef4444;color:#fff;}
+  .btn-danger:hover{background:#dc2626;}
+  .demo-box{margin-top:20px;padding:14px;background:#f0fdfa;border:1px solid #99f6e4;border-radius:8px;font-size:.85rem;}
+  .demo-box strong{display:block;margin-bottom:4px;color:#0d9488;}
+  .login-link{margin-top:16px;font-size:.9rem;color:#6b7280;}
+  .login-link a{color:#0d9488;font-weight:600;text-decoration:none;}
+  /* MAIN LAYOUT */
+  .app{display:none;height:100vh;}
+  .app.active{display:flex;}
+  .sidebar{width:220px;background:#fff;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;padding:16px 0;}
+  .sidebar .logo{display:flex;align-items:center;gap:10px;padding:0 20px 20px;border-bottom:1px solid #e5e7eb;}
+  .sidebar .logo .icon{width:36px;height:36px;background:#0d9488;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
+  .sidebar .logo div{line-height:1.2;}
+  .sidebar .logo .name{font-weight:700;font-size:.95rem;}
+  .sidebar .logo .sub{font-size:.7rem;color:#6b7280;}
+  .sidebar nav{flex:1;padding:12px 0;}
+  .sidebar nav a{display:flex;align-items:center;gap:10px;padding:10px 20px;color:#6b7280;text-decoration:none;font-size:.9rem;font-weight:500;border-left:3px solid transparent;transition:all .15s;}
+  .sidebar nav a:hover{color:#0d9488;background:#f0fdfa;}
+  .sidebar nav a.active{color:#0d9488;background:#f0fdfa;border-left-color:#0d9488;font-weight:600;}
+  .sidebar nav a .nav-icon{width:20px;text-align:center;}
+  .sidebar .jwt-note{padding:12px 20px;font-size:.75rem;color:#9ca3af;border-top:1px solid #e5e7eb;display:flex;align-items:center;gap:6px;}
+  .jwt-note .dot{width:8px;height:8px;background:#0d9488;border-radius:50;display:inline-block;}
+  .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+  .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 28px;background:#fff;border-bottom:1px solid #e5e7eb;}
+  .topbar .greeting{font-size:.85rem;color:#6b7280;}
+  .topbar .greeting strong{display:block;font-size:1rem;color:#1f2937;}
+  .topbar .actions{display:flex;align-items:center;gap:10px;}
+  .topbar .role-badge{background:#f0fdfa;color:#0d9488;padding:4px 12px;border-radius:6px;font-size:.8rem;font-weight:600;}
+  .topbar .btn-logout{background:#fff;border:1.5px solid #d1d5db;padding:6px 14px;border-radius:8px;font-size:.85rem;cursor:pointer;display:flex;align-items:center;gap:6px;color:#374151;}
+  .topbar .btn-logout:hover{background:#fef2f2;border-color:#fca5a5;color:#ef4444;}
+  .content{flex:1;overflow-y:auto;padding:28px;}
+  /* PAGE HEADER */
+  .page-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:24px;}
+  .page-header .tag{color:#0d9488;font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+  .page-header h1{font-size:1.8rem;margin:4px 0 6px;}
+  .page-header p{color:#6b7280;font-size:.9rem;}
+  .page-header .icon-large{width:44px;height:44px;background:#f0fdfa;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;color:#0d9488;}
+  /* TABLE TOOLBAR */
+  .toolbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;gap:12px;flex-wrap:wrap;}
+  .search-box{position:relative;flex:1;max-width:500px;}
+  .search-box input{width:100%;padding:9px 14px 9px 38px;border:1.5px solid #d1d5db;border-radius:8px;font-size:.9rem;outline:none;}
+  .search-box input:focus{border-color:#0d9488;}
+  .search-box .search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:#9ca3af;}
+  .toolbar-actions{display:flex;gap:8px;}
+  .record-count{font-size:.85rem;color:#6b7280;margin-bottom:8px;}
+  /* TABLE */
+  .table-wrap{background:#fff;border-radius:12px;border:1px solid #e5e7eb;overflow:hidden;}
+  table{width:100%;border-collapse:collapse;}
+  thead{background:#f9fafb;}
+  th{text-align:left;padding:12px 16px;font-size:.75rem;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;}
+  td{padding:12px 16px;font-size:.9rem;border-top:1px solid #f3f4f6;}
+  tr:hover td{background:#f9fafb;}
+  .badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:.78rem;font-weight:600;}
+  .badge-green{background:#dcfce7;color:#16a34a;}
+  .badge-yellow{background:#fef9c3;color:#a16207;}
+  .badge-blue{background:#dbeafe;color:#2563eb;}
+  .badge-red{background:#fee2e2;color:#dc2626;}
+  .badge-gray{background:#f3f4f6;color:#6b7280;}
+  .action-btns{display:flex;gap:6px;}
+  .action-btns button{width:32px;height:32px;border:none;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:14px;transition:all .15s;}
+  .btn-edit{background:#f0fdfa;color:#0d9488;}
+  .btn-edit:hover{background:#ccfbf1;}
+  .btn-delete{background:#fef2f2;color:#ef4444;}
+  .btn-delete:hover{background:#fee2e2;}
+  /* SIDE PANEL */
+  .side-panel{position:fixed;right:-480px;top:0;width:420px;height:100vh;background:#fff;box-shadow:-4px 0 24px rgba(0,0,0,.1);transition:right .3s;z-index:100;display:flex;flex-direction:column;}
+  .side-panel.open{right:0;}
+  .side-panel-header{display:flex;align-items:center;justify-content:space-between;padding:20px 24px;border-bottom:1px solid #e5e7eb;}
+  .side-panel-header .tag{color:#0d9488;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;}
+  .side-panel-header h2{font-size:1.3rem;margin-top:2px;}
+  .side-panel-header .close-btn{width:32px;height:32px;border:1px solid #d1d5db;border-radius:8px;background:#fff;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;}
+  .side-panel-header .close-btn:hover{background:#f3f4f6;}
+  .side-panel-body{flex:1;overflow-y:auto;padding:24px;}
+  .side-panel-body .form-group{margin-bottom:16px;}
+  .side-panel-footer{padding:16px 24px;border-top:1px solid #e5e7eb;}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.15);z-index:99;}
+  .overlay.active{display:block;}
+  /* PROFILE PAGE */
+  .profile-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;}
+  .profile-card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:24px;}
+  .profile-card .tag{color:#0d9488;font-size:.7rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+  .profile-card h3{font-size:1.15rem;margin-bottom:16px;}
+  .profile-avatar{width:80px;height:80px;border-radius:50%;background:#0d9488;color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.8rem;font-weight:700;margin:0 auto 12px;}
+  .profile-name{text-align:center;font-size:1.1rem;font-weight:600;margin-bottom:4px;}
+  .profile-role{text-align:center;display:inline-block;margin:0 auto;background:#f0fdfa;color:#0d9488;padding:2px 12px;border-radius:12px;font-size:.8rem;font-weight:600;}
+  .profile-info{margin-top:16px;font-size:.85rem;color:#6b7280;}
+  .profile-info div{display:flex;align-items:center;gap:8px;padding:6px 0;}
+  /* DASHBOARD */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px;}
+  .stat-card{background:#fff;border-radius:12px;border:1px solid #e5e7eb;padding:20px;}
+  .stat-card .stat-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:12px;}
+  .stat-card .stat-value{font-size:1.8rem;font-weight:700;color:#1f2937;}
+  .stat-card .stat-label{font-size:.85rem;color:#6b7280;margin-top:2px;}
+  .icon-teal{background:#f0fdfa;color:#0d9488;}
+  .icon-blue{background:#dbeafe;color:#2563eb;}
+  .icon-amber{background:#fef3c7;color:#d97706;}
+  .icon-rose{background:#ffe4e6;color:#e11d48;}
+  /* TOAST */
+  .toast{position:fixed;bottom:24px;right:24px;background:#1f2937;color:#fff;padding:12px 20px;border-radius:10px;font-size:.9rem;opacity:0;transform:translateY(20px);transition:all .3s;z-index:200;display:flex;align-items:center;gap:8px;}
+  .toast.show{opacity:1;transform:translateY(0);}
+  .toast.success{background:#059669;}
+  .toast.error{background:#dc2626;}
+  @media(max-width:768px){
+    .login-right{display:none;}
+    .sidebar{width:60px;} .sidebar .logo .name,.sidebar .logo .sub,.sidebar nav a span,.sidebar .jwt-note span{display:none;}
+    .sidebar nav a{justify-content:center;padding:10px 0;}
+    .profile-grid{grid-template-columns:1fr;}
+    .stats-grid{grid-template-columns:repeat(2,1fr);}
+    .side-panel{width:100%;}
+  }
+</style>
 </head>
-
 <body>
 
-  <!-- ========================================================
-         1. ADMIN SCHEDULING VIEW
-         ======================================================== -->
-  <div id="admin-view">
-    <!-- Sidebar Navigation -->
-    <aside class="sidebar">
-      <div class="brand-section">
-        <div class="brand-logo-container">
-          <i class="bi bi-file-earmark-medical-fill"></i>
+<!-- LOGIN PAGE -->
+<div class="login-page" id="loginPage">
+  <div class="login-left">
+    <div class="login-box">
+      <div class="logo">
+        <div class="icon">♡</div>
+        <div><span>CarePlus Hospital</span><small>Hệ thống quản lý bệnh viện</small></div>
+      </div>
+      <div class="tag">Chào mừng trở lại</div>
+      <h2>Đăng nhập hệ thống</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="loginEmail" placeholder="admin@hospital.test" required>
         </div>
-        <div>
-          <span class="brand-title">Hệ thống Quản lý</span>
-          <span class="brand-subtitle">Phòng điều hành</span>
+        <div class="form-group">
+          <label>Mật khẩu</label>
+          <input type="password" id="loginPassword" placeholder="Tối thiểu 6 ký tự" required>
+        </div>
+        <button type="submit" class="btn btn-primary">🔒 Đăng nhập</button>
+      </form>
+      <p class="login-link">Chưa có tài khoản? <a href="#" onclick="showRegister()">Đăng ký</a></p>
+      <div class="demo-box">
+        <strong>Tài khoản demo</strong>
+        admin@hospital.test · doctor@hospital.test · patient@hospital.test<br>
+        Mật khẩu: <strong>123456</strong>
+      </div>
+    </div>
+  </div>
+  <div class="login-right">
+    <div>
+      <p>Quản trị vận hành</p>
+      <h1>Lịch khám, bác sĩ, bệnh nhân và khoa/phòng trong một nơi.</h1>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="app">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="icon">♡</div>
+      <div><div class="name">CarePlus</div><div class="sub">Hospital OS</div></div>
+    </div>
+    <nav>
+      <a href="#" data-page="dashboard" class="active"><span class="nav-icon">📊</span><span>Tổng quan</span></a>
+      <a href="#" data-page="reports"><span class="nav-icon">📈</span><span>Báo cáo</span></a>
+      <a href="#" data-page="patients"><span class="nav-icon">👤</span><span>Bệnh nhân</span></a>
+      <a href="#" data-page="doctors"><span class="nav-icon">🩺</span><span>Bác sĩ</span></a>
+      <a href="#" data-page="departments"><span class="nav-icon">🏥</span><span>Khoa/phòng</span></a>
+      <a href="#" data-page="appointments"><span class="nav-icon">📅</span><span>Lịch khám</span></a>
+      <a href="#" data-page="profile"><span class="nav-icon">👤</span><span>Hồ sơ</span></a>
+    </nav>
+    <div class="jwt-note"><span class="dot" style="width:8px;height:8px;background:#0d9488;border-radius:50%;display:inline-block;flex-shrink:0;"></span><span>Bảo mật JWT · Phân quyền theo vai trò</span></div>
+  </aside>
+  <div class="main">
+    <div class="topbar">
+      <div class="greeting">Xin chào<br><strong id="topbarName">Quản trị Bệnh viện</strong></div>
+      <div class="actions">
+        <span class="role-badge" id="topbarRole">Quản trị</span>
+        <button class="btn-logout" onclick="logout()">→ Đăng xuất</button>
+      </div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<!-- SIDE PANEL -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="side-panel" id="sidePanel">
+  <div class="side-panel-header">
+    <div><div class="tag" id="panelTag">TẠO MỚI</div><h2 id="panelTitle">Bệnh nhân</h2></div>
+    <button class="close-btn" onclick="closePanel()">✕</button>
+  </div>
+  <div class="side-panel-body" id="panelBody"></div>
+  <div class="side-panel-footer" id="panelFooter"></div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ===== DATA STORE =====
+const DB = {
+  users: [
+    {id:1, name:'Quản trị Bệnh viện', email:'admin@hospital.test', password:'123456', role:'admin', createdAt:'2/7/26 09:16'},
+    {id:2, name:'BS. Trương An Nhi', email:'doctor@hospital.test', password:'123456', role:'doctor', createdAt:'2/7/26 09:20'},
+    {id:3, name:'Trần Gia Hân', email:'patient@hospital.test', password:'123456', role:'patient', createdAt:'2/7/26 09:25'}
+  ],
+  patients: [
+    {id:1, name:'Trần Gia Hân', email:'patient@hospital.test', phone:'0912 222 333', dob:'1995-03-15', gender:'Nữ', address:'Hà Nội', bhyt:'BHYT-2026-0001', status:'active'},
+    {id:2, name:'Nguyễn Hoàng Nam', email:'nam.nguyen@example.com', phone:'0912 444 555', dob:'1988-07-22', gender:'Nam', address:'TP. Hồ Chí Minh', bhyt:'BHYT-2026-0002', status:'active'},
+    {id:3, name:'Lê Thu Hà', email:'ha.le@example.com', phone:'0912 666 777', dob:'1990-11-08', gender:'Nữ', address:'Đà Nẵng', bhyt:'BHYT-2026-0003', status:'monitor'},
+    {id:4, name:'Phạm Minh Khang', email:'khang.pham@example.com', phone:'0912 888 999', dob:'1975-01-30', gender:'Nam', address:'Hải Phòng', bhyt:'BHYT-2026-0004', status:'active'},
+    {id:5, name:'Đặng Ngọc Mai', email:'mai.dang@example.com', phone:'0912 101 202', dob:'2000-05-12', gender:'Nữ', address:'Cần Thơ', bhyt:'BHYT-2026-0005', status:'monitor'},
+    {id:6, name:'Võ Quốc Hưng', email:'hung.vo@example.com', phone:'0912 303 404', dob:'1983-09-18', gender:'Nam', address:'Huế', bhyt:'BHYT-2026-0006', status:'active'},
+    {id:7, name:'Bùi Khánh Linh', email:'linh.bui@example.com', phone:'0912 505 606', dob:'1997-12-01', gender:'Nữ', address:'Nha Trang', bhyt:'BHYT-2026-0007', status:'active'},
+    {id:8, name:'Hoàng Anh Tuấn', email:'tuan.hoang@example.com', phone:'0912 707 808', dob:'1982-09-24', gender:'Nam', address:'Tam Kỳ, Quảng Nam', bhyt:'BHYT-2026-0008', status:'active'}
+  ],
+  doctors: [
+    {id:1, name:'BS. Trương An Nhi', email:'doctor@hospital.test', phone:'0901 111 222', specialty:'Chấn thương chỉnh hình', department:'Chấn thương chỉnh hình', status:'active'},
+    {id:2, name:'BS. Phạm Thanh Vy', email:'vy.pham@hospital.test', phone:'0901 333 444', specialty:'Nhi khoa', department:'Nhi khoa', status:'active'},
+    {id:3, name:'Ths. Võ Đức Huy', email:'huy.vo@hospital.test', phone:'0901 555 666', specialty:'Xét nghiệm', department:'Xét nghiệm', status:'active'},
+    {id:4, name:'Ths. Lê Quốc Bảo', email:'bao.le@hospital.test', phone:'0901 777 888', specialty:'Tim mạch', department:'Tim mạch', status:'active'},
+    {id:5, name:'BS. Nguyễn Minh Anh', email:'anh.nguyen@hospital.test', phone:'0901 999 000', specialty:'Cấp cứu', department:'Cấp cứu', status:'active'}
+  ],
+  departments: [
+    {id:1, name:'Chấn thương chỉnh hình', head:'BS. Trương An Nhi', rooms:5, status:'active'},
+    {id:2, name:'Nhi khoa', head:'BS. Phạm Thanh Vy', rooms:4, status:'active'},
+    {id:3, name:'Xét nghiệm', head:'Ths. Võ Đức Huy', rooms:3, status:'active'},
+    {id:4, name:'Tim mạch', head:'Ths. Lê Quốc Bảo', rooms:6, status:'active'},
+    {id:5, name:'Cấp cứu', head:'BS. Nguyễn Minh Anh', rooms:8, status:'active'},
+    {id:6, name:'Sản phụ khoa', head:'', rooms:4, status:'active'},
+    {id:7, name:'Da liễu', head:'', rooms:2, status:'inactive'}
+  ],
+  appointments: [
+    {id:1, time:'29/6/26 10:00', patient:'Lê Thu Hà', doctor:'BS. Phạm Thanh Vy', dept:'Nhi khoa', status:'completed'},
+    {id:2, time:'30/6/26 08:30', patient:'Trần Gia Hân', doctor:'BS. Nguyễn Minh Anh', dept:'Cấp cứu', status:'booked'},
+    {id:3, time:'30/6/26 10:15', patient:'Nguyễn Hoàng Nam', doctor:'Ths. Lê Quốc Bảo', dept:'Tim mạch', status:'booked'},
+    {id:4, time:'30/6/26 13:45', patient:'Đặng Ngọc Mai', doctor:'Ths. Võ Đức Huy', dept:'Xét nghiệm', status:'booked'},
+    {id:5, time:'1/7/26 09:30', patient:'Võ Quốc Hưng', doctor:'BS. Trương An Nhi', dept:'Chấn thương chỉnh hình', status:'booked'},
+    {id:6, time:'2/7/26 14:00', patient:'Bùi Khánh Linh', doctor:'Ths. Lê Quốc Bảo', dept:'Tim mạch', status:'booked'},
+    {id:7, time:'3/7/26 08:00', patient:'Trần Gia Hân', doctor:'BS. Trương An Nhi', dept:'Chấn thương chỉnh hình', status:'booked'},
+    {id:8, time:'4/7/26 09:45', patient:'Lê Thu Hà', doctor:'BS. Phạm Thanh Vy', dept:'Nhi khoa', status:'booked'},
+    {id:9, time:'5/7/26 10:30', patient:'Đặng Ngọc Mai', doctor:'BS. Trương An Nhi', dept:'Chấn thương chỉnh hình', status:'booked'},
+    {id:10, time:'6/7/26 11:00', patient:'Phạm Minh Khang', doctor:'Ths. Lê Quốc Bảo', dept:'Tim mạch', status:'booked'},
+    {id:11, time:'7/7/26 08:30', patient:'Hoàng Anh Tuấn', doctor:'BS. Nguyễn Minh Anh', dept:'Cấp cứu', status:'booked'},
+    {id:12, time:'8/7/26 14:30', patient:'Nguyễn Hoàng Nam', doctor:'Ths. Võ Đức Huy', dept:'Xét nghiệm', status:'booked'}
+  ]
+};
+
+let currentUser = null;
+let nextIds = {patients:9, doctors:6, departments:8, appointments:13};
+
+// ===== AUTH =====
+document.getElementById('loginForm').addEventListener('submit', e => {
+  e.preventDefault();
+  const email = document.getElementById('loginEmail').value;
+  const pw = document.getElementById('loginPassword').value;
+  const user = DB.users.find(u => u.email === email && u.password === pw);
+  if(!user){toast('Email hoặc mật khẩu không đúng!','error');return;}
+  currentUser = {...user};
+  const token = btoa(JSON.stringify({id:user.id,role:user.role,exp:Date.now()+3600000}));
+  sessionStorage.setItem('jwt', token);
+  sessionStorage.setItem('user', JSON.stringify(currentUser));
+  enterApp();
+});
+
+function enterApp(){
+  document.getElementById('loginPage').style.display='none';
+  document.getElementById('app').classList.add('active');
+  document.getElementById('topbarName').textContent=currentUser.name;
+  const roles={admin:'Quản trị',doctor:'Bác sĩ',patient:'Bệnh nhân'};
+  document.getElementById('topbarRole').textContent=roles[currentUser.role]||currentUser.role;
+  navigateTo('dashboard');
+}
+
+function logout(){
+  sessionStorage.clear();
+  currentUser=null;
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('loginPage').style.display='flex';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+  toast('Đã đăng xuất','success');
+}
+
+function showRegister(){toast('Tính năng đăng ký đang phát triển','error');}
+
+// Check session on load
+(function(){
+  const saved = sessionStorage.getItem('user');
+  if(saved){currentUser=JSON.parse(saved);enterApp();}
+})();
+
+// ===== NAVIGATION =====
+document.querySelectorAll('.sidebar nav a').forEach(a=>{
+  a.addEventListener('click',e=>{
+    e.preventDefault();
+    navigateTo(a.dataset.page);
+  });
+});
+
+function navigateTo(page){
+  document.querySelectorAll('.sidebar nav a').forEach(a=>a.classList.toggle('active',a.dataset.page===page));
+  closePanel();
+  const content = document.getElementById('content');
+  const renderers = {dashboard:renderDashboard,reports:renderReports,patients:renderPatients,doctors:renderDoctors,departments:renderDepartments,appointments:renderAppointments,profile:renderProfile};
+  (renderers[page]||renderDashboard)(content);
+}
+
+// ===== TOAST =====
+function toast(msg,type='success'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+type;
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+// ===== PANEL =====
+function openPanel(tag,title,bodyHtml,footerHtml=''){
+  document.getElementById('panelTag').textContent=tag;
+  document.getElementById('panelTitle').textContent=title;
+  document.getElementById('panelBody').innerHTML=bodyHtml;
+  document.getElementById('panelFooter').innerHTML=footerHtml;
+  document.getElementById('sidePanel').classList.add('open');
+  document.getElementById('overlay').classList.add('active');
+}
+function closePanel(){
+  document.getElementById('sidePanel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('active');
+}
+
+// ===== HELPERS =====
+function statusBadge(s){
+  const map={active:['Đang hoạt động','badge-green'],monitor:['Theo dõi','badge-yellow'],inactive:['Ngừng','badge-gray'],booked:['Đã đặt lịch','badge-blue'],completed:['Đã hoàn tất','badge-green'],cancelled:['Đã hủy','badge-red']};
+  const [label,cls]=map[s]||[s,'badge-gray'];
+  return `<span class="badge ${cls}">${label}</span>`;
+}
+function exportCSV(headers,rows,filename){
+  let csv=headers.join(',')+'\n';
+  rows.forEach(r=>csv+=r.map(c=>`"${c}"`).join(',')+'\n');
+  const blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();
+}
+function printTable(title,html){
+  const w=window.open('','','width=900,height=600');
+  w.document.write(`<html><head><title>${title}</title><style>body{font-family:sans-serif;padding:20px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f0fdfa}</style></head><body><h2>${title}</h2>${html}</body></html>`);
+  w.document.close();w.print();
+}
+
+// ===== DASHBOARD =====
+function renderDashboard(el){
+  el.innerHTML=`
+    <div class="page-header"><div><div class="tag">TỔNG QUAN</div><h1>Dashboard</h1><p>Tổng hợp thông tin hệ thống bệnh viện.</p></div><div class="icon-large">📊</div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon icon-teal">👤</div><div class="stat-value">${DB.patients.length}</div><div class="stat-label">Bệnh nhân</div></div>
+      <div class="stat-card"><div class="stat-icon icon-blue">🩺</div><div class="stat-value">${DB.doctors.length}</div><div class="stat-label">Bác sĩ</div></div>
+      <div class="stat-card"><div class="stat-icon icon-amber">🏥</div><div class="stat-value">${DB.departments.filter(d=>d.status==='active').length}</div><div class="stat-label">Khoa/phòng</div></div>
+      <div class="stat-card"><div class="stat-icon icon-rose">📅</div><div class="stat-value">${DB.appointments.filter(a=>a.status==='booked').length}</div><div class="stat-label">Lịch khám sắp tới</div></div>
+    </div>
+    <div class="table-wrap">
+      <table><thead><tr><th>Lịch khám gần đây</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Khoa</th><th>Trạng thái</th></tr></thead>
+      <tbody>${DB.appointments.slice(-5).reverse().map(a=>`<tr><td>${a.time}</td><td>${a.patient}</td><td>${a.doctor}</td><td>${a.dept}</td><td>${statusBadge(a.status)}</td></tr>`).join('')}</tbody></table>
+    </div>`;
+}
+
+// ===== REPORTS =====
+function renderReports(el){
+  const activeP=DB.patients.filter(p=>p.status==='active').length;
+  const monitorP=DB.patients.filter(p=>p.status==='monitor').length;
+  const booked=DB.appointments.filter(a=>a.status==='booked').length;
+  const done=DB.appointments.filter(a=>a.status==='completed').length;
+  el.innerHTML=`
+    <div class="page-header"><div><div class="tag">THỐNG KÊ</div><h1>Báo cáo</h1><p>Thống kê tổng hợp hoạt động bệnh viện.</p></div><div class="icon-large">📈</div></div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon icon-teal">✅</div><div class="stat-value">${activeP}</div><div class="stat-label">BN đang hoạt động</div></div>
+      <div class="stat-card"><div class="stat-icon icon-amber">👁</div><div class="stat-value">${monitorP}</div><div class="stat-label">BN theo dõi</div></div>
+      <div class="stat-card"><div class="stat-icon icon-blue">📋</div><div class="stat-value">${booked}</div><div class="stat-label">Lịch chờ khám</div></div>
+      <div class="stat-card"><div class="stat-icon icon-rose">✔</div><div class="stat-value">${done}</div><div class="stat-label">Đã hoàn tất</div></div>
+    </div>
+    <div class="table-wrap" style="padding:24px;">
+      <h3 style="margin-bottom:12px;">Phân bổ bệnh nhân theo khoa</h3>
+      ${DB.departments.filter(d=>d.status==='active').map(d=>{
+        const count=DB.appointments.filter(a=>a.dept===d.name).length;
+        return `<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <span style="width:180px;font-size:.9rem;">${d.name}</span>
+          <div style="flex:1;background:#e5e7eb;height:24px;border-radius:6px;overflow:hidden;">
+            <div style="width:${Math.max(count*8,5)}%;background:#0d9488;height:100%;border-radius:6px;display:flex;align-items:center;padding-left:8px;color:#fff;font-size:.8rem;font-weight:600;">${count}</div>
+          </div></div>`;
+      }).join('')}
+    </div>`;
+}
+
+// ===== PATIENTS =====
+function renderPatients(el){
+  const renderTable=(filter='')=>{
+    const data=DB.patients.filter(p=>!filter||p.name.toLowerCase().includes(filter.toLowerCase())||p.email.toLowerCase().includes(filter.toLowerCase())||p.phone.includes(filter)||p.bhyt.toLowerCase().includes(filter.toLowerCase()));
+    return `
+    <div class="page-header"><div><div class="tag">QUẢN LÝ</div><h1>Bệnh nhân</h1><p>Quản lý hồ sơ, thông tin bảo hiểm và trạng thái theo dõi.</p></div><div class="icon-large">👤</div></div>
+    <div class="toolbar">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="patientSearch" placeholder="Tìm kiếm bệnh nhân..." value="${filter}" oninput="searchPatients()"></div>
+      <div class="toolbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportPatientCSV()">↓ CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="printPatients()">🖨 In</button>
+        <button class="btn btn-primary btn-sm" onclick="openPatientForm()">+ Thêm mới</button>
+      </div>
+    </div>
+    <div class="record-count">${data.length} bản ghi</div>
+    <div class="table-wrap"><table><thead><tr><th>Họ tên</th><th>Email</th><th>Điện thoại</th><th>BHYT</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>${data.map(p=>`<tr><td>${p.name}</td><td>${p.email}</td><td>${p.phone}</td><td>${p.bhyt}</td><td>${statusBadge(p.status)}</td>
+      <td><div class="action-btns"><button class="btn-edit" onclick="openPatientForm(${p.id})">✏</button><button class="btn-delete" onclick="deletePatient(${p.id})">🗑</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  };
+  el.innerHTML=renderTable();
+  window.searchPatients=()=>{el.innerHTML=renderTable(document.getElementById('patientSearch').value);};
+  window.exportPatientCSV=()=>exportCSV(['Họ tên','Email','Điện thoại','BHYT','Trạng thái'],DB.patients.map(p=>[p.name,p.email,p.phone,p.bhyt,p.status]),'benh-nhan.csv');
+  window.printPatients=()=>printTable('Danh sách bệnh nhân',document.querySelector('.table-wrap').innerHTML);
+}
+
+window.openPatientForm=(id)=>{
+  const p=id?DB.patients.find(x=>x.id===id):null;
+  const tag=p?'CẬP NHẬT':'TẠO MỚI';
+  openPanel(tag,'Bệnh nhân',`
+    <div class="form-group"><label>Họ tên</label><input id="pName" value="${p?p.name:''}"></div>
+    <div class="form-group"><label>Email</label><input id="pEmail" value="${p?p.email:''}"></div>
+    <div class="form-group"><label>Số điện thoại</label><input id="pPhone" value="${p?p.phone:''}"></div>
+    <div class="form-group"><label>Ngày sinh</label><input type="date" id="pDob" value="${p?p.dob:''}"></div>
+    <div class="form-group"><label>Giới tính</label><select id="pGender"><option ${p&&p.gender==='Nam'?'selected':''}>Nam</option><option ${p&&p.gender==='Nữ'?'selected':''}>Nữ</option></select></div>
+    <div class="form-group"><label>Địa chỉ</label><input id="pAddr" value="${p?p.address:''}"></div>
+    <div class="form-group"><label>Mã BHYT</label><input id="pBhyt" value="${p?p.bhyt:''}"></div>
+    <div class="form-group"><label>Trạng thái</label><select id="pStatus"><option value="active" ${p&&p.status==='active'?'selected':''}>Đang hoạt động</option><option value="monitor" ${p&&p.status==='monitor'?'selected':''}>Theo dõi</option></select></div>`,
+    `<button class="btn btn-primary" onclick="savePatient(${id||0})">${p?'💾 Cập nhật':'+ Thêm bệnh nhân'}</button>`);
+};
+
+window.savePatient=(id)=>{
+  const d={name:document.getElementById('pName').value,email:document.getElementById('pEmail').value,phone:document.getElementById('pPhone').value,dob:document.getElementById('pDob').value,gender:document.getElementById('pGender').value,address:document.getElementById('pAddr').value,bhyt:document.getElementById('pBhyt').value,status:document.getElementById('pStatus').value};
+  if(!d.name||!d.email){toast('Vui lòng nhập đầy đủ thông tin','error');return;}
+  if(id){const p=DB.patients.find(x=>x.id===id);Object.assign(p,d);toast('Cập nhật thành công!');}
+  else{d.id=nextIds.patients++;DB.patients.push(d);toast('Thêm bệnh nhân thành công!');}
+  closePanel();navigateTo('patients');
+};
+
+window.deletePatient=(id)=>{
+  if(!confirm('Xác nhận xóa bệnh nhân này?'))return;
+  DB.patients=DB.patients.filter(p=>p.id!==id);toast('Đã xóa bệnh nhân');navigateTo('patients');
+};
+
+// ===== DOCTORS =====
+function renderDoctors(el){
+  const renderTable=(filter='')=>{
+    const data=DB.doctors.filter(d=>!filter||d.name.toLowerCase().includes(filter.toLowerCase())||d.specialty.toLowerCase().includes(filter.toLowerCase()));
+    return `
+    <div class="page-header"><div><div class="tag">QUẢN LÝ</div><h1>Bác sĩ</h1><p>Quản lý thông tin bác sĩ và chuyên khoa.</p></div><div class="icon-large">🩺</div></div>
+    <div class="toolbar">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="doctorSearch" placeholder="Tìm kiếm bác sĩ..." value="${filter}" oninput="searchDoctors()"></div>
+      <div class="toolbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportDoctorCSV()">↓ CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="printDoctors()">🖨 In</button>
+        <button class="btn btn-primary btn-sm" onclick="openDoctorForm()">+ Thêm mới</button>
+      </div>
+    </div>
+    <div class="record-count">${data.length} bản ghi</div>
+    <div class="table-wrap"><table><thead><tr><th>Họ tên</th><th>Email</th><th>Điện thoại</th><th>Chuyên khoa</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>${data.map(d=>`<tr><td>${d.name}</td><td>${d.email}</td><td>${d.phone}</td><td>${d.specialty}</td><td>${statusBadge(d.status)}</td>
+      <td><div class="action-btns"><button class="btn-edit" onclick="openDoctorForm(${d.id})">✏</button><button class="btn-delete" onclick="deleteDoctor(${d.id})">🗑</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  };
+  el.innerHTML=renderTable();
+  window.searchDoctors=()=>{el.innerHTML=renderTable(document.getElementById('doctorSearch').value);};
+  window.exportDoctorCSV=()=>exportCSV(['Họ tên','Email','Điện thoại','Chuyên khoa','Trạng thái'],DB.doctors.map(d=>[d.name,d.email,d.phone,d.specialty,d.status]),'bac-si.csv');
+  window.printDoctors=()=>printTable('Danh sách bác sĩ',document.querySelector('.table-wrap').innerHTML);
+}
+
+window.openDoctorForm=(id)=>{
+  const d=id?DB.doctors.find(x=>x.id===id):null;
+  openPanel(d?'CẬP NHẬT':'TẠO MỚI','Bác sĩ',`
+    <div class="form-group"><label>Họ tên</label><input id="dName" value="${d?d.name:''}"></div>
+    <div class="form-group"><label>Email</label><input id="dEmail" value="${d?d.email:''}"></div>
+    <div class="form-group"><label>Điện thoại</label><input id="dPhone" value="${d?d.phone:''}"></div>
+    <div class="form-group"><label>Chuyên khoa</label><input id="dSpecialty" value="${d?d.specialty:''}"></div>
+    <div class="form-group"><label>Khoa/phòng</label><select id="dDept">${DB.departments.filter(x=>x.status==='active').map(x=>`<option ${d&&d.department===x.name?'selected':''}>${x.name}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Trạng thái</label><select id="dStatus"><option value="active" ${d&&d.status==='active'?'selected':''}>Đang hoạt động</option><option value="inactive" ${d&&d.status==='inactive'?'selected':''}>Ngừng</option></select></div>`,
+    `<button class="btn btn-primary" onclick="saveDoctor(${id||0})">${d?'💾 Cập nhật':'+ Thêm bác sĩ'}</button>`);
+};
+
+window.saveDoctor=(id)=>{
+  const d={name:document.getElementById('dName').value,email:document.getElementById('dEmail').value,phone:document.getElementById('dPhone').value,specialty:document.getElementById('dSpecialty').value,department:document.getElementById('dDept').value,status:document.getElementById('dStatus').value};
+  if(!d.name){toast('Vui lòng nhập họ tên','error');return;}
+  if(id){Object.assign(DB.doctors.find(x=>x.id===id),d);toast('Cập nhật thành công!');}
+  else{d.id=nextIds.doctors++;DB.doctors.push(d);toast('Thêm bác sĩ thành công!');}
+  closePanel();navigateTo('doctors');
+};
+
+window.deleteDoctor=(id)=>{
+  if(!confirm('Xác nhận xóa bác sĩ này?'))return;
+  DB.doctors=DB.doctors.filter(d=>d.id!==id);toast('Đã xóa bác sĩ');navigateTo('doctors');
+};
+
+// ===== DEPARTMENTS =====
+function renderDepartments(el){
+  const renderTable=(filter='')=>{
+    const data=DB.departments.filter(d=>!filter||d.name.toLowerCase().includes(filter.toLowerCase()));
+    return `
+    <div class="page-header"><div><div class="tag">QUẢN LÝ</div><h1>Khoa/phòng</h1><p>Quản lý các khoa, phòng ban trong bệnh viện.</p></div><div class="icon-large">🏥</div></div>
+    <div class="toolbar">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="deptSearch" placeholder="Tìm kiếm khoa/phòng..." value="${filter}" oninput="searchDepts()"></div>
+      <div class="toolbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportDeptCSV()">↓ CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="printDepts()">🖨 In</button>
+        <button class="btn btn-primary btn-sm" onclick="openDeptForm()">+ Thêm mới</button>
+      </div>
+    </div>
+    <div class="record-count">${data.length} bản ghi</div>
+    <div class="table-wrap"><table><thead><tr><th>Tên khoa</th><th>Trưởng khoa</th><th>Số phòng</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>${data.map(d=>`<tr><td>${d.name}</td><td>${d.head||'—'}</td><td>${d.rooms}</td><td>${statusBadge(d.status)}</td>
+      <td><div class="action-btns"><button class="btn-edit" onclick="openDeptForm(${d.id})">✏</button><button class="btn-delete" onclick="deleteDept(${d.id})">🗑</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  };
+  el.innerHTML=renderTable();
+  window.searchDepts=()=>{el.innerHTML=renderTable(document.getElementById('deptSearch').value);};
+  window.exportDeptCSV=()=>exportCSV(['Tên khoa','Trưởng khoa','Số phòng','Trạng thái'],DB.departments.map(d=>[d.name,d.head,d.rooms,d.status]),'khoa-phong.csv');
+  window.printDepts=()=>printTable('Danh sách khoa/phòng',document.querySelector('.table-wrap').innerHTML);
+}
+
+window.openDeptForm=(id)=>{
+  const d=id?DB.departments.find(x=>x.id===id):null;
+  openPanel(d?'CẬP NHẬT':'TẠO MỚI','Khoa/phòng',`
+    <div class="form-group"><label>Tên khoa</label><input id="dpName" value="${d?d.name:''}"></div>
+    <div class="form-group"><label>Trưởng khoa</label><input id="dpHead" value="${d?d.head:''}"></div>
+    <div class="form-group"><label>Số phòng</label><input type="number" id="dpRooms" value="${d?d.rooms:1}" min="1"></div>
+    <div class="form-group"><label>Trạng thái</label><select id="dpStatus"><option value="active" ${d&&d.status==='active'?'selected':''}>Đang hoạt động</option><option value="inactive" ${d&&d.status==='inactive'?'selected':''}>Ngừng</option></select></div>`,
+    `<button class="btn btn-primary" onclick="saveDept(${id||0})">${d?'💾 Cập nhật':'+ Thêm khoa'}</button>`);
+};
+
+window.saveDept=(id)=>{
+  const d={name:document.getElementById('dpName').value,head:document.getElementById('dpHead').value,rooms:parseInt(document.getElementById('dpRooms').value),status:document.getElementById('dpStatus').value};
+  if(!d.name){toast('Vui lòng nhập tên khoa','error');return;}
+  if(id){Object.assign(DB.departments.find(x=>x.id===id),d);toast('Cập nhật thành công!');}
+  else{d.id=nextIds.departments++;DB.departments.push(d);toast('Thêm khoa thành công!');}
+  closePanel();navigateTo('departments');
+};
+
+window.deleteDept=(id)=>{
+  if(!confirm('Xác nhận xóa khoa/phòng này?'))return;
+  DB.departments=DB.departments.filter(d=>d.id!==id);toast('Đã xóa khoa/phòng');navigateTo('departments');
+};
+
+// ===== APPOINTMENTS =====
+function renderAppointments(el){
+  const renderTable=(filter='')=>{
+    const data=DB.appointments.filter(a=>!filter||a.patient.toLowerCase().includes(filter.toLowerCase())||a.doctor.toLowerCase().includes(filter.toLowerCase())||a.dept.toLowerCase().includes(filter.toLowerCase()));
+    return `
+    <div class="page-header"><div><div class="tag">QUẢN LÝ</div><h1>Lịch khám</h1><p>Quản lý lịch hẹn khám bệnh.</p></div><div class="icon-large">📅</div></div>
+    <div class="toolbar">
+      <div class="search-box"><span class="search-icon">🔍</span><input type="text" id="apptSearch" placeholder="Tìm kiếm lịch khám..." value="${filter}" oninput="searchAppts()"></div>
+      <div class="toolbar-actions">
+        <button class="btn btn-outline btn-sm" onclick="exportApptCSV()">↓ CSV</button>
+        <button class="btn btn-outline btn-sm" onclick="printAppts()">🖨 In</button>
+        <button class="btn btn-primary btn-sm" onclick="openApptForm()">+ Thêm mới</button>
+      </div>
+    </div>
+    <div class="record-count">${data.length} bản ghi</div>
+    <div class="table-wrap"><table><thead><tr><th>Thời gian</th><th>Bệnh nhân</th><th>Bác sĩ</th><th>Khoa</th><th>Trạng thái</th><th>Thao tác</th></tr></thead>
+    <tbody>${data.map(a=>`<tr><td>${a.time}</td><td>${a.patient}</td><td>${a.doctor}</td><td>${a.dept}</td><td>${statusBadge(a.status)}</td>
+      <td><div class="action-btns"><button class="btn-edit" onclick="openApptForm(${a.id})">✏</button><button class="btn-delete" onclick="deleteAppt(${a.id})">🗑</button></div></td></tr>`).join('')}</tbody></table></div>`;
+  };
+  el.innerHTML=renderTable();
+  window.searchAppts=()=>{el.innerHTML=renderTable(document.getElementById('apptSearch').value);};
+  window.exportApptCSV=()=>exportCSV(['Thời gian','Bệnh nhân','Bác sĩ','Khoa','Trạng thái'],DB.appointments.map(a=>[a.time,a.patient,a.doctor,a.dept,a.status]),'lich-kham.csv');
+  window.printAppts=()=>printTable('Danh sách lịch khám',document.querySelector('.table-wrap').innerHTML);
+}
+
+window.openApptForm=(id)=>{
+  const a=id?DB.appointments.find(x=>x.id===id):null;
+  openPanel(a?'CẬP NHẬT':'TẠO MỚI','Lịch khám',`
+    <div class="form-group"><label>Bệnh nhân</label><select id="aPatient">${DB.patients.map(p=>`<option ${a&&a.patient===p.name?'selected':''}>${p.name}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Bác sĩ</label><select id="aDoctor">${DB.doctors.map(d=>`<option ${a&&a.doctor===d.name?'selected':''}>${d.name}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Khoa/phòng</label><select id="aDept">${DB.departments.filter(d=>d.status==='active').map(d=>`<option ${a&&a.dept===d.name?'selected':''}>${d.name}</option>`).join('')}</select></div>
+    <div class="form-group"><label>Thời gian khám</label><input type="datetime-local" id="aTime" value="${a?'':''}"></div>
+    <div class="form-group"><label>Lý do khám</label><textarea id="aReason" rows="3">${a?a.reason||'':''}</textarea></div>
+    <div class="form-group"><label>Trạng thái</label><select id="aStatus"><option value="booked" ${a&&a.status==='booked'?'selected':''}>Đã đặt lịch</option><option value="completed" ${a&&a.status==='completed'?'selected':''}>Đã hoàn tất</option><option value="cancelled" ${a&&a.status==='cancelled'?'selected':''}>Đã hủy</option></select></div>`,
+    `<button class="btn btn-primary" onclick="saveAppt(${id||0})">${a?'💾 Cập nhật':'+ Đặt lịch khám'}</button>`);
+};
+
+window.saveAppt=(id)=>{
+  const dt=document.getElementById('aTime').value;
+  const timeStr=dt?new Date(dt).toLocaleDateString('vi-VN',{day:'numeric',month:'numeric',year:'2-digit',hour:'2-digit',minute:'2-digit'}):'N/A';
+  const d={patient:document.getElementById('aPatient').value,doctor:document.getElementById('aDoctor').value,dept:document.getElementById('aDept').value,time:timeStr,reason:document.getElementById('aReason').value,status:document.getElementById('aStatus').value};
+  if(id){const a=DB.appointments.find(x=>x.id===id);if(dt)a.time=d.time;a.patient=d.patient;a.doctor=d.doctor;a.dept=d.dept;a.reason=d.reason;a.status=d.status;toast('Cập nhật thành công!');}
+  else{if(!dt){toast('Vui lòng chọn thời gian','error');return;}d.id=nextIds.appointments++;DB.appointments.push(d);toast('Đặt lịch thành công!');}
+  closePanel();navigateTo('appointments');
+};
+
+window.deleteAppt=(id)=>{
+  if(!confirm('Xác nhận xóa lịch khám này?'))return;
+  DB.appointments=DB.appointments.filter(a=>a.id!==id);toast('Đã xóa lịch khám');navigateTo('appointments');
+};
+
+// ===== PROFILE =====
+function renderProfile(el){
+  const u=currentUser;
+  const roles={admin:'Quản trị',doctor:'Bác sĩ',patient:'Bệnh nhân'};
+  const initials=u.name.split(' ').map(w=>w[0]).join('').slice(-2).toUpperCase();
+  el.innerHTML=`
+    <div class="page-header"><div><div class="tag">TÀI KHOẢN</div><h1>Hồ sơ cá nhân</h1><p>Quản lý thông tin tài khoản và bảo mật.</p></div><div class="icon-large">👤</div></div>
+    <div class="profile-grid">
+      <div class="profile-card" style="text-align:center;">
+        <div class="profile-avatar">${initials}</div>
+        <div class="profile-name">${u.name}</div>
+        <div style="text-align:center;margin-bottom:16px;"><span class="profile-role">${roles[u.role]}</span></div>
+        <div class="profile-info">
+          <div>✉ ${u.email}</div>
+          <div>🆔 Mã tài khoản: #${u.id}</div>
+          <div>📅 Tạo lúc: ${u.createdAt||'09:16 2/7/26'}</div>
         </div>
       </div>
-
-      <ul class="nav-menu">
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom">
-            <i class="bi bi-person-badge"></i>
-            <span>Bác sĩ</span>
-          </a>
-        </li>
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom">
-            <i class="bi bi-person"></i>
-            <span>Bệnh nhân</span>
-          </a>
-        </li>
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom active">
-            <i class="bi bi-calendar-event"></i>
-            <span>Lịch hẹn</span>
-          </a>
-        </li>
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom">
-            <i class="bi bi-building"></i>
-            <span>Khoa phòng</span>
-          </a>
-        </li>
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom">
-            <i class="bi bi-box-seam"></i>
-            <span>Vật tư</span>
-          </a>
-        </li>
-        <li class="nav-item-custom">
-          <a href="#" class="nav-link-custom">
-            <i class="bi bi-gear"></i>
-            <span>Cấu hình</span>
-          </a>
-        </li>
-      </ul>
-
-      <button class="btn-add-schedule">
-        <i class="bi bi-plus-lg"></i>
-        <span>Thêm lịch mới</span>
-      </button>
-
-      <div class="sidebar-footer">
-        <ul class="nav-menu">
-          <li class="nav-item-custom">
-            <a href="#" class="nav-link-custom py-2">
-              <i class="bi bi-question-circle"></i>
-              <span>Hỗ trợ</span>
-            </a>
-          </li>
-          <li class="nav-item-custom">
-            <a href="#" class="nav-link-custom text-danger py-2">
-              <i class="bi bi-box-arrow-right text-danger"></i>
-              <span>Đăng xuất</span>
-            </a>
-          </li>
-        </ul>
+      <div class="profile-card">
+        <div class="tag">THÔNG TIN</div><h3>Cập nhật hồ sơ</h3>
+        <div class="form-group"><label>Họ tên</label><input id="prName" value="${u.name}"></div>
+        <div class="form-group"><label>Email (không thể đổi)</label><input value="${u.email}" disabled style="background:#f3f4f6;"></div>
+        <button class="btn btn-primary" onclick="saveProfile()">💾 Lưu hồ sơ</button>
       </div>
-    </aside>
-
-    <!-- Main Section -->
-    <div class="main-wrapper">
-
-      <!-- Top Navigation Header -->
-      <header class="header-main">
-        <div class="header-left">
-          <h1 class="header-title">Xếp lịch Hospital</h1>
-          <ul class="header-nav">
-            <li><a href="#" class="header-nav-link">Dashboard</a></li>
-            <li><a href="#" class="header-nav-link active">Schedules</a></li>
-            <li><a href="#" class="header-nav-link">Reports</a></li>
-          </ul>
-        </div>
-
-        <div class="header-right">
-          <!-- Inter-view Switcher -->
-          <div class="view-switcher-pill">
-            <button class="switcher-btn active" onclick="switchView('admin')">Admin</button>
-            <button class="switcher-btn" onclick="switchView('patient')">Đặt lịch</button>
-            <button class="switcher-btn" onclick="switchView('cancel')">Hủy lịch</button>
-          </div>
-
-          <div class="search-box d-none d-md-block">
-            <i class="bi bi-search"></i>
-            <input type="text" placeholder="Tìm kiếm bệnh nhân..." />
-          </div>
-
-          <button class="icon-btn">
-            <i class="bi bi-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-
-          <button class="icon-btn">
-            <i class="bi bi-question-circle"></i>
-          </button>
-
-          <button class="icon-btn">
-            <i class="bi bi-gear"></i>
-          </button>
-
-          <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=100"
-            alt="Avatar" class="user-avatar" />
-        </div>
-      </header>
-
-      <!-- Content Area -->
-      <main class="content-body">
-
-        <!-- Left Filter Column -->
-        <section class="filter-col">
-          <div>
-            <h2 class="section-title-icon mb-3">
-              <i class="bi bi-sliders text-dark"></i>
-              Bộ lọc
-            </h2>
-          </div>
-
-          <!-- Therapy department -->
-          <div>
-            <div class="filter-label">Khoa điều trị</div>
-            <div class="custom-select-wrapper">
-              <select>
-                <option>Tất cả khoa</option>
-                <option>Khoa Nội</option>
-                <option>Khoa Ngoại</option>
-                <option>Cấp cứu</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Doctor in charge -->
-          <div>
-            <div class="filter-label">Bác sĩ phụ trách</div>
-            <div class="doctor-checkbox-list">
-              <label class="doctor-checkbox-item">
-                <input type="checkbox" checked />
-                <span>BS. Nguyễn Văn A</span>
-              </label>
-              <label class="doctor-checkbox-item">
-                <input type="checkbox" checked />
-                <span>BS. Trần Thị B</span>
-              </label>
-              <label class="doctor-checkbox-item">
-                <input type="checkbox" />
-                <span>BS. Lê Hoàng C</span>
-              </label>
-            </div>
-          </div>
-
-          <!-- Sickroom select -->
-          <div>
-            <div class="filter-label">Phòng bệnh</div>
-            <div class="room-badges-grid">
-              <span class="room-badge active">P.101</span>
-              <span class="room-badge">P.102</span>
-              <span class="room-badge">P.205</span>
-              <span class="room-badge text-start ps-3 align-items-center"
-                style="grid-column: span 3; width: fit-content;">P.301</span>
-            </div>
-          </div>
-
-          <!-- Stats card -->
-          <div class="stats-card mt-auto">
-            <span class="stats-card-title">Thống kê ngày</span>
-            <span class="stats-card-value">24</span>
-            <span class="stats-card-subtext">Lịch hẹn hôm nay</span>
-          </div>
-        </section>
-
-        <!-- Right Weekly Calendar container -->
-        <section class="calendar-container">
-
-          <!-- Calendar Control Bar -->
-          <div class="calendar-control-bar">
-            <div class="d-flex align-items-center gap-3">
-              <h3 class="calendar-current-month">Tháng 10, 2023</h3>
-              <div class="calendar-nav-controls">
-                <button class="btn-nav-cal"><i class="bi bi-chevron-left"></i></button>
-                <button class="btn-today">Hôm nay</button>
-                <button class="btn-nav-cal"><i class="bi bi-chevron-right"></i></button>
-              </div>
-            </div>
-
-            <div class="view-toggle-group">
-              <button class="btn-toggle-view">Ngày</button>
-              <button class="btn-toggle-view active">Tuần</button>
-              <button class="btn-toggle-view">Tháng</button>
-            </div>
-          </div>
-
-          <!-- Grid Scheduler -->
-          <div class="calendar-wrapper">
-
-            <!-- Days Row -->
-            <div class="calendar-week-header">
-              <div class="time-header-spacer"></div>
-              <div class="day-header">Thứ 2</div>
-              <div class="day-header">Thứ 3</div>
-              <div class="day-header active-day-header">Thứ 4</div>
-              <div class="day-header">Thứ 5</div>
-              <div class="day-header">Thứ 6</div>
-              <div class="day-header">Thứ 7</div>
-              <div class="day-header">CN</div>
-            </div>
-
-            <!-- Time & Day Body Grid -->
-            <div class="calendar-grid">
-
-              <!-- Time labels column -->
-              <div class="time-labels-column">
-                <div class="time-label-cell">08:00</div>
-                <div class="time-label-cell">09:00</div>
-                <div class="time-label-cell">10:00</div>
-                <div class="time-label-cell">11:00</div>
-                <div class="time-label-cell">12:00</div>
-              </div>
-
-              <!-- Day columns with absolute positioned event cards -->
-              <div class="day-columns-container">
-
-                <!-- Thứ 2 Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-
-                  <!-- Event Card: Nguyễn Văn A (08:30 - 10:00) -->
-                  <div class="schedule-event-card card-blue" style="top: 50px; height: 150px;">
-                    <span class="event-title">Nguyễn V...</span>
-                    <span class="event-time">
-                      <i class="bi bi-clock"></i>
-                      08:30 - 10:00
-                    </span>
-                    <span class="event-tag">KHÁM NỘI</span>
-                  </div>
-                </div>
-
-                <!-- Thứ 3 Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-
-                  <!-- Event Card: Lê Thị Mẫu (10:00 - 11:00) -->
-                  <div class="schedule-event-card card-gray" style="top: 200px; height: 100px;">
-                    <span class="event-title">Lê Thị Mẫu</span>
-                    <span class="event-time">
-                      <i class="bi bi-clock"></i>
-                      10:00 - 11:00
-                    </span>
-                  </div>
-                </div>
-
-                <!-- Thứ 4 Column (Active Day) -->
-                <div class="calendar-day-column active-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-
-                  <!-- Event Card: Trần Hoàng (09:00 - 11:00) -->
-                  <div class="schedule-event-card card-blue" style="top: 100px; height: 200px;">
-                    <span class="event-title">Trần Hoà...</span>
-                    <span class="event-time">
-                      <i class="bi bi-clock"></i>
-                      09:00 - 11:00
-                    </span>
-                    <span class="event-tag">CẤP CỨU</span>
-                    <span class="urgent-badge">URGENT</span>
-                  </div>
-                </div>
-
-                <!-- Thứ 5 Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                </div>
-
-                <!-- Thứ 6 Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                </div>
-
-                <!-- Thứ 7 Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                </div>
-
-                <!-- CN Column -->
-                <div class="calendar-day-column">
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                  <div class="hour-slot-marker"></div>
-                </div>
-
-              </div>
-            </div>
-          </div>
-        </section>
-
-      </main>
-    </div>
-  </div>
-
-
-  <!-- ========================================================
-         2. PATIENT APPOINTMENT BOOKING VIEW
-         ======================================================== -->
-  <div id="patient-view" class="d-none">
-    <div class="main-wrapper full-width">
-
-      <!-- Header -->
-      <header class="header-main px-5">
-        <div class="header-left">
-          <h1 class="header-title" style="color: #003366; font-size: 24px;">Xếp lịch</h1>
-          <ul class="header-nav">
-            <li><a href="#" class="header-nav-link active">Đặt lịch</a></li>
-            <li><a href="#" class="header-nav-link">Lịch của tôi</a></li>
-            <li><a href="#" class="header-nav-link">Thông báo</a></li>
-          </ul>
-        </div>
-
-        <div class="header-right">
-          <!-- Inter-view Switcher -->
-          <div class="view-switcher-pill">
-            <button class="switcher-btn" onclick="switchView('admin')">Admin</button>
-            <button class="switcher-btn active" onclick="switchView('patient')">Đặt lịch</button>
-            <button class="switcher-btn" onclick="switchView('cancel')">Hủy lịch</button>
-          </div>
-
-          <button class="icon-btn">
-            <i class="bi bi-bell"></i>
-            <span class="badge-dot"></span>
-          </button>
-
-          <button class="icon-btn">
-            <i class="bi bi-question-circle"></i>
-          </button>
-
-          <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=100"
-            alt="Avatar" class="user-avatar" />
-        </div>
-      </header>
-
-      <!-- Main Content Area -->
-      <main class="patient-container">
-
-        <div class="patient-main-content">
-
-          <!-- Left Column: Form & selection -->
-          <section class="booking-section">
-
-            <!-- Title Block -->
-            <div>
-              <h2 class="fw-bold mb-2" style="font-size: 24px; color: var(--text-dark);">Đặt lịch khám mới</h2>
-              <p class="text-secondary m-0" style="font-size: 14px;">Chọn chuyên khoa và bác sĩ phù hợp để bắt đầu hành
-                trình chăm sóc sức khỏe của bạn.</p>
-            </div>
-
-            <!-- Specialization grid -->
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold m-0" style="font-size: 16px; color: var(--text-dark);">Chọn chuyên khoa</h4>
-                <a href="#" class="text-decoration-none fw-semibold"
-                  style="font-size: 13px; color: var(--primary-color);">Xem tất cả</a>
-              </div>
-
-              <div class="specialization-row">
-                <!-- spec 1 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-blue">
-                    <i class="bi bi-stethoscope"></i>
-                  </div>
-                  <span class="spec-name">Nội khoa</span>
-                </div>
-                <!-- spec 2 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-green">
-                    <i class="bi bi-clipboard2-pulse"></i>
-                  </div>
-                  <span class="spec-name">Ngoại khoa</span>
-                </div>
-                <!-- spec 3 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-blue">
-                    <i class="bi bi-emoji-smile"></i>
-                  </div>
-                  <span class="spec-name">Nhi khoa</span>
-                </div>
-                <!-- spec 4 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-blue">
-                    <i class="bi bi-gender-female"></i>
-                  </div>
-                  <span class="spec-name">Sản khoa</span>
-                </div>
-                <!-- spec 5 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-green">
-                    <i class="bi bi-shield-check"></i>
-                  </div>
-                  <span class="spec-name">Răng Hàm Mặt</span>
-                </div>
-                <!-- spec 6 -->
-                <div class="spec-card">
-                  <div class="spec-icon-wrapper spec-icon-blue">
-                    <i class="bi bi-droplet"></i>
-                  </div>
-                  <span class="spec-name">Da liễu</span>
-                </div>
-              </div>
-            </div>
-
-            <!-- Suggested Doctors list -->
-            <div>
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <h4 class="fw-bold m-0" style="font-size: 16px; color: var(--text-dark);">Bác sĩ gợi ý</h4>
-                <div class="d-flex gap-2">
-                  <button class="btn-nav-cal" style="width: 32px; height: 32px;"><i
-                      class="bi bi-chevron-left"></i></button>
-                  <button class="btn-nav-cal" style="width: 32px; height: 32px;"><i
-                      class="bi bi-chevron-right"></i></button>
-                </div>
-              </div>
-
-              <div class="doctors-row">
-                <!-- Doctor 1 -->
-                <div class="doc-card" onclick="switchView('cancel')">
-                  <span class="doc-badge doc-badge-blue">NỘI KHOA</span>
-                  <h5 class="doc-name">BS. Nguyễn Văn An</h5>
-                  <p class="doc-exp">15 năm kinh nghiệm</p>
-                  <div class="doc-rating">
-                    <i class="bi bi-star-fill"></i>
-                    4.9 <span>(120 đánh giá)</span>
-                  </div>
-                </div>
-
-                <!-- Doctor 2 -->
-                <div class="doc-card">
-                  <span class="doc-badge doc-badge-blue">NHI KHOA</span>
-                  <h5 class="doc-name">ThS. BS. Lê Thị Bình</h5>
-                  <p class="doc-exp">10 năm kinh nghiệm</p>
-                  <div class="doc-rating">
-                    <i class="bi bi-star-fill"></i>
-                    4.8 <span>(95 đánh giá)</span>
-                  </div>
-                </div>
-
-                <!-- Doctor 3 (Active) -->
-                <div class="doc-card active">
-                  <span class="doc-badge doc-badge-green">NGOẠI KHOA</span>
-                  <h5 class="doc-name">PGS. TS. Trần Cao Cường</h5>
-                  <p class="doc-exp">25 năm kinh nghiệm</p>
-                  <div class="doc-rating">
-                    <i class="bi bi-star-fill"></i>
-                    5.0 <span>(312 đánh giá)</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Date and Time selector cards -->
-            <div class="datetime-row">
-
-              <!-- Select date -->
-              <div class="booking-card">
-                <h4 class="booking-card-title">Chọn ngày khám</h4>
-
-                <div class="mini-calendar-header">
-                  <span class="mini-calendar-month">Tháng 10, 2023</span>
-                  <div class="d-flex gap-1">
-                    <button class="btn-nav-cal" style="width: 28px; height: 28px; font-size: 12px;"><i
-                        class="bi bi-chevron-left"></i></button>
-                    <button class="btn-nav-cal" style="width: 28px; height: 28px; font-size: 12px;"><i
-                        class="bi bi-chevron-right"></i></button>
-                  </div>
-                </div>
-
-                <div class="mini-calendar-grid">
-                  <!-- Day Labels -->
-                  <span class="mini-cal-day-label">T2</span>
-                  <span class="mini-cal-day-label">T3</span>
-                  <span class="mini-cal-day-label">T4</span>
-                  <span class="mini-cal-day-label">T5</span>
-                  <span class="mini-cal-day-label">T6</span>
-                  <span class="mini-cal-day-label">T7</span>
-                  <span class="mini-cal-day-label">CN</span>
-
-                  <!-- Dates row 1 -->
-                  <span class="mini-cal-date muted">26</span>
-                  <span class="mini-cal-date muted">27</span>
-                  <span class="mini-cal-date muted">28</span>
-                  <span class="mini-cal-date muted">29</span>
-                  <span class="mini-cal-date muted">30</span>
-                  <span class="mini-cal-date">1</span>
-                  <span class="mini-cal-date">2</span>
-
-                  <!-- Dates row 2 -->
-                  <span class="mini-cal-date">3</span>
-                  <span class="mini-cal-date">4</span>
-                  <span class="mini-cal-date">5</span>
-                  <span class="mini-cal-date active">6</span>
-                  <span class="mini-cal-date">7</span>
-                  <span class="mini-cal-date">8</span>
-                  <span class="mini-cal-date">9</span>
-                </div>
-              </div>
-
-              <!-- Select time -->
-              <div class="booking-card">
-                <h4 class="booking-card-title">Chọn khung giờ</h4>
-
-                <div>
-                  <h5 class="time-slot-section-title">Buổi sáng</h5>
-                  <div class="time-slots-grid">
-                    <button class="time-slot-btn">08:00</button>
-                    <button class="time-slot-btn active">09:00</button>
-                    <button class="time-slot-btn">10:00</button>
-                  </div>
-                </div>
-
-                <div class="mt-3">
-                  <h5 class="time-slot-section-title">Buổi chiều</h5>
-                  <div class="time-slots-grid">
-                    <button class="time-slot-btn">14:00</button>
-                    <button class="time-slot-btn">15:00</button>
-                    <button class="time-slot-btn">16:00</button>
-                  </div>
-                </div>
-              </div>
-
-            </div>
-
-          </section>
-
-          <!-- Right Column: Appointment summary -->
-          <section class="summary-col">
-            <h3 class="summary-title">Tóm tắt đặt lịch</h3>
-
-            <!-- Doctor -->
-            <div class="summary-item mt-2">
-              <div class="summary-icon-box">
-                <i class="bi bi-person"></i>
-              </div>
-              <div class="summary-item-content">
-                <span class="summary-item-label">Bác sĩ</span>
-                <span class="summary-item-val">BS. Nguyễn Văn An</span>
-                <span class="summary-item-subtext">Khoa Nội tổng quát</span>
-              </div>
-            </div>
-
-            <!-- Time -->
-            <div class="summary-item">
-              <div class="summary-icon-box">
-                <i class="bi bi-calendar3"></i>
-              </div>
-              <div class="summary-item-content">
-                <span class="summary-item-label">Thời gian</span>
-                <span class="summary-item-val">09:00 - Thứ Sáu</span>
-                <span class="summary-item-subtext">Ngày 06 tháng 10, 2023</span>
-              </div>
-            </div>
-
-            <!-- Fee -->
-            <div class="summary-item">
-              <div class="summary-icon-box">
-                <i class="bi bi-cash-stack"></i>
-              </div>
-              <div class="summary-item-content">
-                <span class="summary-item-label">Phí khám dự kiến</span>
-                <span class="price-val">350.000 VND</span>
-              </div>
-            </div>
-
-            <div class="summary-divider"></div>
-
-            <!-- Agreement -->
-            <label class="terms-checkbox">
-              <input type="checkbox" />
-              <span>Tôi đồng ý với các điều khoản và chính sách của phòng khám.</span>
-            </label>
-
-            <!-- Confirm button -->
-            <button class="btn-confirm-booking" onclick="switchView('cancel')">
-              Xác nhận đặt lịch
-            </button>
-          </section>
-
-        </div>
-
-      </main>
-    </div>
-  </div>
-
-
-  <!-- ========================================================
-         3. APPOINTMENT CANCELLATION VIEW
-         ======================================================== -->
-  <div id="cancel-view" class="d-none">
-    <div class="main-wrapper full-width">
-
-      <!-- Header -->
-      <header class="header-main px-5">
-        <div class="header-left">
-          <h1 class="header-title" style="color: #003366; font-size: 24px;">Xếp lịch</h1>
-          <ul class="header-nav">
-            <li><a href="#" class="header-nav-link">Đặt lịch</a></li>
-            <li><a href="#" class="header-nav-link active">Lịch của tôi</a></li>
-            <li><a href="#" class="header-nav-link">Thông báo</a></li>
-          </ul>
-        </div>
-
-        <div class="header-right">
-          <!-- Inter-view Switcher -->
-          <div class="view-switcher-pill">
-            <button class="switcher-btn" onclick="switchView('admin')">Admin</button>
-            <button class="switcher-btn" onclick="switchView('patient')">Đặt lịch</button>
-            <button class="switcher-btn active" onclick="switchView('cancel')">Hủy lịch</button>
-          </div>
-
-          <button class="icon-btn">
-            <i class="bi bi-person-circle"></i>
-          </button>
-        </div>
-      </header>
-
-      <!-- Main Content Area -->
-      <main class="cancellation-container">
-
-        <!-- Back Link -->
-        <div>
-          <a href="#" class="back-link" onclick="switchView('patient')">
-            <i class="bi bi-arrow-left"></i>
-            QUAY LẠI
-          </a>
-        </div>
-
-        <!-- Page Title -->
-        <div>
-          <h2 class="fw-bold mb-2" style="font-size: 28px; color: #0f172a;">Hủy lịch hẹn</h2>
-          <p class="text-secondary m-0" style="font-size: 14px;">Vui lòng xác nhận thông tin trước khi thực hiện hủy
-            lịch.</p>
-        </div>
-
-        <!-- Appointment Info Card -->
-        <div class="cancellation-card">
-
-          <!-- Upper Section (Doctor) -->
-          <div class="appointment-info-subcard">
-            <div class="d-flex align-items-center">
-              <div class="doctor-avatar-box">
-                <i class="bi bi-briefcase-fill"></i>
-              </div>
-              <div>
-                <h4 class="fw-bold m-0" style="font-size: 16px; color: var(--text-dark);">BS. Nguyễn Văn An</h4>
-                <span class="fw-bold"
-                  style="font-size: 11px; color: #0284c7; letter-spacing: 0.5px; text-transform: uppercase;">Chuyên khoa
-                  Nội tổng quát</span>
-              </div>
-            </div>
-            <div>
-              <span class="appointment-id-badge">ID: #AP-99231</span>
-            </div>
-          </div>
-
-          <!-- Lower Section (Time / Location Details) -->
-          <div class="info-details-list">
-            <!-- Item 1: Date -->
-            <div class="info-details-item">
-              <div class="info-details-icon">
-                <i class="bi bi-calendar3"></i>
-              </div>
-              <div class="info-details-content">
-                <span class="info-details-label">Ngày hẹn</span>
-                <span class="info-details-val">Thứ Sáu, 25 Tháng 10, 2023</span>
-              </div>
-            </div>
-
-            <!-- Item 2: Time -->
-            <div class="info-details-item">
-              <div class="info-details-icon">
-                <i class="bi bi-clock"></i>
-              </div>
-              <div class="info-details-content">
-                <span class="info-details-label">Giờ hẹn</span>
-                <span class="info-details-val">09:30 SA - 10:00 SA</span>
-              </div>
-            </div>
-
-            <!-- Item 3: Location -->
-            <div class="info-details-item">
-              <div class="info-details-icon">
-                <i class="bi bi-geo-alt"></i>
-              </div>
-              <div class="info-details-content">
-                <span class="info-details-label">Địa điểm</span>
-                <span class="info-details-val">Phòng khám 204, Tầng 2, Tòa nhà A - Bệnh viện Đa khoa Tâm Anh</span>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- Reason selection form -->
-        <div class="cancellation-card">
-
-          <h4 class="fw-bold mb-4"
-            style="font-size: 16px; color: var(--text-dark); display: flex; align-items: center; gap: 8px;">
-            <i class="bi bi-question-circle" style="color: var(--text-muted);"></i>
-            Lý do hủy lịch
-          </h4>
-
-          <div class="reason-radio-grid">
-            <!-- Option 1 -->
-            <label class="reason-radio-card">
-              <input type="radio" name="cancel_reason" value="change_plan" checked />
-              <span>Thay đổi kế hoạch</span>
-            </label>
-
-            <!-- Option 2 -->
-            <label class="reason-radio-card">
-              <input type="radio" name="cancel_reason" value="health_issue" />
-              <span>Vấn đề sức khỏe</span>
-            </label>
-
-            <!-- Option 3 -->
-            <label class="reason-radio-card">
-              <input type="radio" name="cancel_reason" value="found_other" />
-              <span>Đã tìm được chỗ khác</span>
-            </label>
-
-            <!-- Option 4 -->
-            <label class="reason-radio-card">
-              <input type="radio" name="cancel_reason" value="other" />
-              <span>Khác</span>
-            </label>
-          </div>
-
-          <!-- Optional comments textarea -->
-          <div class="mt-4">
-            <div class="textarea-label">Chi tiết bổ sung (Không bắt buộc)</div>
-            <textarea class="custom-textarea" placeholder="Nhập thêm thông tin chi tiết về lý do của bạn..."></textarea>
-          </div>
-
-        </div>
-
-        <!-- Cancellation Policy alert banner -->
-        <div class="policy-alert-card">
-          <div class="policy-alert-icon">
-            <i class="bi bi-exclamation-triangle-fill"></i>
-          </div>
-          <div class="policy-alert-content">
-            <span class="policy-alert-title">Chính sách hủy lịch</span>
-            <p class="policy-alert-text">Việc hủy lịch trước 24 giờ sẽ không mất phí. Nếu hủy sau thời gian này, bạn có
-              thể bị hạn chế đặt lịch trong vòng 30 ngày tới. Vui lòng cân nhắc kỹ.</p>
-          </div>
-        </div>
-
-        <!-- Action buttons -->
-        <div class="cancellation-footer-btns">
-          <button class="btn-cancel-action-outline" onclick="switchView('patient')">Quay lại</button>
-          <button class="btn-cancel-action-danger"
-            onclick="alert('Đã xác nhận hủy lịch hẹn thành công!'); switchView('patient');">Xác nhận hủy lịch</button>
-        </div>
-
-      </main>
-    </div>
-  </div>
-
-  <!-- Bootstrap Bundle with Popper JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-  <!-- View Switcher Script -->
-  <script>
-    function switchView(viewName) {
-      const adminView = document.getElementById('admin-view');
-      const patientView = document.getElementById('patient-view');
-      const cancelView = document.getElementById('cancel-view');
-
-      // Hide all views first
-      adminView.classList.add('d-none');
-      patientView.classList.add('d-none');
-      cancelView.classList.add('d-none');
-
-      // Show targets
-      if (viewName === 'admin') {
-        adminView.classList.remove('d-none');
-      } else if (viewName === 'patient') {
-        patientView.classList.remove('d-none');
-      } else if (viewName === 'cancel') {
-        cancelView.classList.remove('d-none');
-      }
-
-      // Synchronize all view switcher pill states
-      const activeButtons = document.querySelectorAll(`.switcher-btn`);
-      activeButtons.forEach(btn => {
-        const text = btn.innerText.trim();
-        if ((viewName === 'admin' && text === 'Admin') ||
-          (viewName === 'patient' && text === 'Đặt lịch') ||
-          (viewName === 'cancel' && text === 'Hủy lịch')) {
-          btn.classList.add('active');
-        } else {
-          btn.classList.remove('active');
-        }
-      });
-    }
-  </script>
+      <div class="profile-card">
+        <div class="tag">BẢO MẬT</div><h3>Đổi mật khẩu</h3>
+        <div class="form-group"><label>Mật khẩu hiện tại</label><input type="password" id="prOldPw"></div>
+        <div class="form-group"><label>Mật khẩu mới</label><input type="password" id="prNewPw"></div>
+        <div class="form-group"><label>Xác nhận mật khẩu mới</label><input type="password" id="prConfPw"></div>
+        <button class="btn btn-primary" onclick="changePassword()">🔑 Đổi mật khẩu</button>
+      </div>
+    </div>`;
+}
+
+window.saveProfile=()=>{
+  const name=document.getElementById('prName').value;
+  if(!name){toast('Vui lòng nhập họ tên','error');return;}
+  currentUser.name=name;
+  const u=DB.users.find(x=>x.id===currentUser.id);if(u)u.name=name;
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  document.getElementById('topbarName').textContent=name;
+  toast('Cập nhật hồ sơ thành công!');navigateTo('profile');
+};
+
+window.changePassword=()=>{
+  const old=document.getElementById('prOldPw').value;
+  const nw=document.getElementById('prNewPw').value;
+  const cf=document.getElementById('prConfPw').value;
+  const u=DB.users.find(x=>x.id===currentUser.id);
+  if(old!==u.password){toast('Mật khẩu hiện tại không đúng','error');return;}
+  if(nw.length<6){toast('Mật khẩu mới tối thiểu 6 ký tự','error');return;}
+  if(nw!==cf){toast('Xác nhận mật khẩu không khớp','error');return;}
+  u.password=nw;currentUser.password=nw;
+  sessionStorage.setItem('user',JSON.stringify(currentUser));
+  toast('Đổi mật khẩu thành công!');navigateTo('profile');
+};
+</script>
 </body>
-
 </html>
