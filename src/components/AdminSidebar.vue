@@ -124,22 +124,58 @@ const triggerEmergency = () => {
             <span>Bệnh nhân</span>
           </a>
 
-          <!-- Cài đặt tài khoản (Màn hình 3) -->
+          <!-- Bác sĩ -->
           <a 
             class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
             :style="{ 
-              backgroundColor: activeTab === 'cai-dat' ? '#22d3ee20' : 'transparent',
-              color: activeTab === 'cai-dat' ? '#0f766e' : '#6b7280',
-              fontWeight: activeTab === 'cai-dat' ? '700' : '500',
-              borderLeft: activeTab === 'cai-dat' ? '4px solid #0f766e' : 'none',
+              backgroundColor: activeTab === 'bac-si' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'bac-si' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'bac-si' ? '700' : '500',
+              borderLeft: activeTab === 'bac-si' ? '4px solid #0f766e' : 'none',
               cursor: 'pointer',
               fontSize: '14px'
             }"
-            @click.prevent="selectTab('cai-dat')"
+            @click.prevent="selectTab('bac-si')"
             href="#"
           >
-            <i class="fas fa-user-circle mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
-            <span>Tài khoản</span>
+            <i class="fas fa-user-md mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Bác sĩ</span>
+          </a>
+
+          <!-- Bệnh nhân nội trú -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'noi-tru' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'noi-tru' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'noi-tru' ? '700' : '500',
+              borderLeft: activeTab === 'noi-tru' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('noi-tru')"
+            href="#"
+          >
+            <i class="fas fa-procedures mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Bệnh nhân nội trú</span>
+          </a>
+
+          <!-- Phòng bệnh -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'phong-benh' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'phong-benh' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'phong-benh' ? '700' : '500',
+              borderLeft: activeTab === 'phong-benh' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('phong-benh')"
+            href="#"
+          >
+            <i class="fas fa-bed mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Phòng bệnh</span>
           </a>
 
           <!-- Đặt thuốc -->
@@ -194,6 +230,24 @@ const triggerEmergency = () => {
           >
             <i class="fas fa-briefcase-medical mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
             <span>Dịch vụ</span>
+          </a>
+
+          <!-- Tài khoản (Cài đặt) -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'cai-dat' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'cai-dat' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'cai-dat' ? '700' : '500',
+              borderLeft: activeTab === 'cai-dat' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('cai-dat')"
+            href="#"
+          >
+            <i class="fas fa-user-circle mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Tài khoản</span>
           </a>
         </nav>
       </div>

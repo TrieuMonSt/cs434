@@ -11,6 +11,10 @@ import MedicineOrderPage from './components/MedicineOrderPage.vue';
 import MedicineInventoryPage from './components/MedicineInventoryPage.vue';
 import ServicePage from './components/ServicePage.vue';
 
+import DoctorManagement from './components/DoctorManagement.vue';
+import RoomManagement from './components/RoomManagement.vue';
+import InpatientManagement from './components/InpatientManagement.vue';
+
 // Default active tab to 'dashboard'
 const activeTab = ref('dashboard');
 
@@ -62,6 +66,15 @@ const handleSelectTab = (tab) => {
 
         <!-- Tab 7: Service Management (Dịch vụ) -->
         <ServicePage v-else-if="activeTab === 'dich-vu'" />
+
+        <!-- Tab 8: Doctor Management (Bác sĩ) -->
+        <DoctorManagement v-else-if="activeTab === 'bac-si'" />
+
+        <!-- Tab 9: Room/Sickroom Management (Phòng bệnh) -->
+        <RoomManagement v-else-if="activeTab === 'phong-benh'" />
+
+        <!-- Tab 10: Inpatient Management (Nội trú) -->
+        <InpatientManagement v-else-if="activeTab === 'noi-tru'" />
 
       </div>
 
