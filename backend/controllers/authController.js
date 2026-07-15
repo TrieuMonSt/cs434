@@ -236,3 +236,39 @@ exports.changePassword = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 };
+
+// Get all registered users (for Permission Management)
+exports.getAllUsers = async (req, res) => {
+  try {
+    const [rows] = await pool.query('SELECT id, username, fullName, specialty, department, staffId, accountType, created_at FROM users ORDER BY created_at DESC');
+    return res.status(200).json({ success: true, users: rows });
+  } catch (error) {
+    console.error('Get all users error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};
+
+// Update user role / accountType
+exports.updateUserRole = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accountType } = req.body;
+
+    if (!accountType) {
+      return res.status(400).json({ success: false, message: 'accountType is required.' });
+    }
+
+    const [existing] = await pool.query('SELECT id FROM users WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'User not found.' });
+    }
+
+    await pool.query('UPDATE users SET accountType = ? WHERE id = ?', [accountType, id]);
+
+    return res.status(200).json({ success: true, message: 'User role updated successfully.' });
+  } catch (error) {
+    console.error('Update user role error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};
+

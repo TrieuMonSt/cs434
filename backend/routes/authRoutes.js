@@ -12,5 +12,7 @@ router.post('/login', authController.login);
 router.get('/profile', verifyToken, authController.getProfile);
 router.put('/profile', verifyToken, upload.single('avatar'), authController.updateProfile);
 router.put('/change-password', verifyToken, authController.changePassword);
+router.get('/users', verifyToken, authController.getAllUsers);
+router.put('/users/:id/role', verifyToken, authController.updateUserRole);
 
 module.exports = router;

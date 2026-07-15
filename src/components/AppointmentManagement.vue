@@ -1,5 +1,6 @@
 <script setup>
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import api from '../utils/api';
 
 // Appointment Data
 const appointments = ref([
@@ -70,6 +71,22 @@ const triggerToast = (msg) => {
   }, 3000);
 };
 
+// API calls
+const fetchAppointments = async () => {
+  try {
+    const response = await api.get('/appointments');
+    if (response.data.success && response.data.appointments) {
+      appointments.value = response.data.appointments;
+    }
+  } catch (error) {
+    console.error('Error fetching appointments from API, keeping mock data:', error.message);
+  }
+};
+
+onMounted(() => {
+  fetchAppointments();
+});
+
 // Filtered Appointments
 const filteredAppointments = computed(() => {
   return appointments.value.filter((appt) => {
@@ -108,44 +125,80 @@ const exportReport = () => {
 };
 
 // Toggle Status
-const toggleStatus = (appt) => {
-  appt.status = appt.status === 'confirmed' ? 'pending' : 'confirmed';
-  triggerToast(`Đã cập nhật trạng thái của ${appt.name}.`);
+const toggleStatus = async (appt) => {
+  const prevStatus = appt.status;
+  const newStatus = appt.status === 'confirmed' ? 'pending' : 'confirmed';
+  appt.status = newStatus;
+
+  try {
+    const response = await api.put(`/appointments/${appt.id}/toggle`);
+    if (response.data.success) {
+      triggerToast(`Đã cập nhật trạng thái của ${appt.name} sang ${newStatus === 'confirmed' ? 'Đã xác nhận' : 'Chờ duyệt'}.`);
+    }
+  } catch (error) {
+    console.error('Error toggling appointment status:', error);
+    // Keep local change as fallback
+    triggerToast(`(Mock) Đã cập nhật trạng thái của ${appt.name}.`);
+  }
 };
 
 // Delete Appointment
-const deleteAppointment = (id) => {
+const deleteAppointment = async (id) => {
   if (confirm('Bạn có chắc chắn muốn xóa lịch hẹn này?')) {
+    const prevList = [...appointments.value];
     appointments.value = appointments.value.filter(a => a.id !== id);
-    // Re-index STT
     appointments.value.forEach((a, index) => {
       a.stt = String(index + 1).padStart(2, '0');
     });
-    triggerToast('Đã xóa lịch hẹn.');
+
+    try {
+      const response = await api.delete(`/appointments/${id}`);
+      if (response.data.success) {
+        triggerToast('Đã xóa lịch hẹn thành công.');
+      }
+    } catch (error) {
+      console.error('Error deleting appointment:', error);
+      // Keep local change as fallback
+      triggerToast('(Mock) Đã xóa lịch hẹn.');
+    }
   }
 };
 
 // Create Appointment
-const createAppointment = () => {
+const createAppointment = async () => {
   if (!newAppt.value.name.trim() || !newAppt.value.dob) {
     alert('Vui lòng điền đầy đủ thông tin bắt buộc.');
     return;
   }
   
-  const nextStt = String(appointments.value.length + 1).padStart(2, '0');
-  appointments.value.push({
-    stt: nextStt,
-    id: `APP-00${Date.now().toString().slice(-3)}`,
+  const payload = {
     name: newAppt.value.name,
     date: newAppt.value.date,
     gender: newAppt.value.gender,
     dob: newAppt.value.dob,
     symptom: newAppt.value.symptom || 'Khám sức khỏe',
     status: newAppt.value.status
-  });
+  };
+
+  try {
+    const response = await api.post('/appointments', payload);
+    if (response.data.success) {
+      triggerToast('Đặt lịch hẹn mới thành công!');
+      fetchAppointments();
+    }
+  } catch (error) {
+    console.error('Error creating appointment:', error);
+    // Mock local creation fallback
+    const nextStt = String(appointments.value.length + 1).padStart(2, '0');
+    appointments.value.push({
+      stt: nextStt,
+      id: `APP-MOCK-${Date.now().toString().slice(-3)}`,
+      ...payload
+    });
+    triggerToast('(Mock) Đặt lịch hẹn mới thành công!');
+  }
 
   showAddModal.value = false;
-  triggerToast('Đặt lịch hẹn mới thành công!');
 
   // Reset fields
   newAppt.value = {

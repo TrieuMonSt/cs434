@@ -8,6 +8,11 @@ const authRoutes = require('./routes/authRoutes');
 const patientRoutes = require('./routes/patientRoutes');
 const appointmentRoutes = require('./routes/appointmentRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
+const doctorRoutes = require('./routes/doctorRoutes');
+const roomRoutes = require('./routes/roomRoutes');
+const inpatientRoutes = require('./routes/inpatientRoutes');
+const medicineRoutes = require('./routes/medicineRoutes');
+const serviceRoutes = require('./routes/serviceRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -27,6 +32,11 @@ app.use('/api/auth', authRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
+app.use('/api/doctors', doctorRoutes);
+app.use('/api/rooms', roomRoutes);
+app.use('/api/inpatients', inpatientRoutes);
+app.use('/api/medicines', medicineRoutes);
+app.use('/api/services', serviceRoutes);
 
 // Base route
 app.get('/', (req, res) => {

@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import AdminSidebar from './components/AdminSidebar.vue';
 import AdminHeader from './components/AdminHeader.vue';
 import AdminFooter from './components/AdminFooter.vue';
@@ -14,13 +14,43 @@ import ServicePage from './components/ServicePage.vue';
 import DoctorManagement from './components/DoctorManagement.vue';
 import RoomManagement from './components/RoomManagement.vue';
 import InpatientManagement from './components/InpatientManagement.vue';
+import PermissionManagement from './components/PermissionManagement.vue';
+import LoginView from './components/LoginView.vue';
+import ChatBot from './components/ChatBot.vue';
+
+const isLoggedIn = ref(false);
+const currentUser = ref(null);
 
 // Default active tab to 'dashboard'
 const activeTab = ref('dashboard');
 
+const checkAuth = () => {
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+  const user = localStorage.getItem('user') || sessionStorage.getItem('user');
+  if (token && user) {
+    isLoggedIn.value = true;
+    currentUser.value = JSON.parse(user);
+  } else {
+    isLoggedIn.value = false;
+    currentUser.value = null;
+  }
+};
+
+const handleLoginSuccess = (user) => {
+  isLoggedIn.value = true;
+  currentUser.value = user;
+  activeTab.value = 'dashboard';
+};
+
 const handleSelectTab = (tab) => {
   if (tab === 'logout') {
     if (confirm('Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      isLoggedIn.value = false;
+      currentUser.value = null;
       alert('Đăng xuất hệ thống thành công!');
     }
     return;
@@ -31,10 +61,18 @@ const handleSelectTab = (tab) => {
   }
   activeTab.value = tab;
 };
+
+onMounted(() => {
+  checkAuth();
+});
 </script>
 
 <template>
-  <div class="d-flex" style="min-height: 100vh;">
+  <!-- Login flow if not authenticated -->
+  <LoginView v-if="!isLoggedIn" @login-success="handleLoginSuccess" />
+
+  <!-- Main System Layout if authenticated -->
+  <div v-else class="d-flex" style="min-height: 100vh;">
     <!-- Sidebar Left Layout -->
     <AdminSidebar :active-tab="activeTab" @select-tab="handleSelectTab" />
 
@@ -76,11 +114,17 @@ const handleSelectTab = (tab) => {
         <!-- Tab 10: Inpatient Management (Nội trú) -->
         <InpatientManagement v-else-if="activeTab === 'noi-tru'" />
 
+        <!-- Tab 11: Permission Management (Phân quyền) -->
+        <PermissionManagement v-else-if="activeTab === 'phan-quyen'" />
+
       </div>
 
       <!-- Footer Bottom Layout -->
       <AdminFooter />
     </div>
+
+    <!-- Floating Chatbot Assistant Widget -->
+    <ChatBot />
   </div>
 </template>
 

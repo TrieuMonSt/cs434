@@ -118,3 +118,71 @@ exports.deletePatient = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Internal server error.' });
   }
 };
+
+// Update patient profile
+exports.updatePatient = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, gender, age, history, status } = req.body;
+
+    const [existing] = await pool.query('SELECT id FROM patients WHERE id = ?', [id]);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Patient not found.' });
+    }
+
+    const historyList = Array.isArray(history) 
+      ? history 
+      : (typeof history === 'string' && history.trim() 
+          ? history.split(',').map(s => s.trim()) 
+          : ['Khám định kỳ']);
+
+    const statusMap = {
+      treating: 'Đang điều trị',
+      critical: 'Nguy kịch',
+      recheck: 'Tái khám',
+      discharged: 'Đã xuất viện'
+    };
+
+    const statusText = statusMap[status] || 'Khám bệnh';
+    
+    const colorSchemas = {
+      treating: { bg: '#e0f2fe', color: '#0369a1' },
+      critical: { bg: '#fee2e2', color: '#b91c1c' },
+      recheck: { bg: '#f3f4f6', color: '#374151' },
+      discharged: { bg: '#f3e8ff', color: '#6b21a8' }
+    };
+    
+    const colors = colorSchemas[status] || { bg: '#f3f4f6', color: '#374151' };
+
+    await pool.query(
+      `UPDATE patients 
+       SET name = ?, gender = ?, age = ?, history = ?, status = ?, statusText = ?, avatarBg = ?, avatarColor = ?
+       WHERE id = ?`,
+      [
+        name,
+        gender,
+        parseInt(age),
+        JSON.stringify(historyList),
+        status,
+        statusText,
+        colors.bg,
+        colors.color,
+        id
+      ]
+    );
+
+    const [updatedRow] = await pool.query('SELECT * FROM patients WHERE id = ?', [id]);
+    const updatedPatient = updatedRow[0];
+    updatedPatient.history = historyList;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Patient updated successfully.',
+      patient: updatedPatient
+    });
+  } catch (error) {
+    console.error('Update patient error:', error);
+    return res.status(500).json({ success: false, message: 'Internal server error.' });
+  }
+};
+

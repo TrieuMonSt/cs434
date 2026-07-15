@@ -232,6 +232,24 @@ const triggerEmergency = () => {
             <span>Dịch vụ</span>
           </a>
 
+          <!-- Phân quyền -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'phan-quyen' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'phan-quyen' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'phan-quyen' ? '700' : '500',
+              borderLeft: activeTab === 'phan-quyen' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('phan-quyen')"
+            href="#"
+          >
+            <i class="fas fa-user-shield mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Phân quyền</span>
+          </a>
+
           <!-- Tài khoản (Cài đặt) -->
           <a 
             class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
