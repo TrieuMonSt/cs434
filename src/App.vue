@@ -7,6 +7,9 @@ import DashboardManagement from './components/DashboardManagement.vue';
 import AppointmentManagement from './components/AppointmentManagement.vue';
 import PatientManagement from './components/PatientManagement.vue';
 import AccountManagement from './components/AccountManagement.vue';
+import MedicineOrderPage from './components/MedicineOrderPage.vue';
+import MedicineInventoryPage from './components/MedicineInventoryPage.vue';
+import ServicePage from './components/ServicePage.vue';
 
 // Default active tab to 'dashboard'
 const activeTab = ref('dashboard');
@@ -50,6 +53,15 @@ const handleSelectTab = (tab) => {
 
         <!-- Tab 4: Account Management (Màn hình 3) -->
         <AccountManagement v-else-if="activeTab === 'cai-dat'" />
+
+        <!-- Tab 5: Medicine Order Management (Đặt thuốc) -->
+        <MedicineOrderPage v-else-if="activeTab === 'dat-thuoc'" />
+
+        <!-- Tab 6: Medicine Inventory Management (Kho thuốc) -->
+        <MedicineInventoryPage v-else-if="activeTab === 'kho-thuoc'" />
+
+        <!-- Tab 7: Service Management (Dịch vụ) -->
+        <ServicePage v-else-if="activeTab === 'dich-vu'" />
 
       </div>
 

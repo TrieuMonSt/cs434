@@ -29,6 +29,24 @@ const doctorProfile = computed(() => {
         role: 'Quản trị viên',
         avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=100&h=100'
       };
+    case 'dat-thuoc':
+      return {
+        name: 'DS. Phạm Thị Lan',
+        role: 'Dược sĩ phụ trách',
+        avatar: 'https://images.unsplash.com/photo-1582750433449-648ed127bb54?auto=format&fit=crop&q=80&w=100&h=100'
+      };
+    case 'kho-thuoc':
+      return {
+        name: 'DS. Hoàng Văn Đức',
+        role: 'Quản lý kho dược',
+        avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=100&h=100'
+      };
+    case 'dich-vu':
+      return {
+        name: 'BS. Ngô Thị Hương',
+        role: 'Quản lý dịch vụ y tế',
+        avatar: 'https://images.unsplash.com/photo-1559839734-2b71ea197ec2?auto=format&fit=crop&q=80&w=100&h=100'
+      };
     case 'dashboard':
     default:
       return {
@@ -48,6 +66,12 @@ const searchPlaceholder = computed(() => {
       return 'Tìm kiếm bệnh nhân, tiểu sử hoặc ID...';
     case 'cai-dat':
       return 'Tìm kiếm hồ sơ...';
+    case 'dat-thuoc':
+      return 'Tìm kiếm đơn thuốc, bệnh nhân...';
+    case 'kho-thuoc':
+      return 'Tìm kiếm tên thuốc, mã, phân loại...';
+    case 'dich-vu':
+      return 'Tìm kiếm tên dịch vụ, khoa/phòng...';
     case 'dashboard':
     default:
       return 'Tìm kiếm bệnh nhân, hồ sơ hoặc nhân viên...';

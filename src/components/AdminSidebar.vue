@@ -141,6 +141,60 @@ const triggerEmergency = () => {
             <i class="fas fa-user-circle mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
             <span>Tài khoản</span>
           </a>
+
+          <!-- Đặt thuốc -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'dat-thuoc' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'dat-thuoc' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'dat-thuoc' ? '700' : '500',
+              borderLeft: activeTab === 'dat-thuoc' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('dat-thuoc')"
+            href="#"
+          >
+            <i class="fas fa-prescription-bottle-medical mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Đặt thuốc</span>
+          </a>
+
+          <!-- Kho thuốc -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'kho-thuoc' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'kho-thuoc' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'kho-thuoc' ? '700' : '500',
+              borderLeft: activeTab === 'kho-thuoc' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('kho-thuoc')"
+            href="#"
+          >
+            <i class="fas fa-warehouse mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Kho thuốc</span>
+          </a>
+
+          <!-- Dịch vụ -->
+          <a 
+            class="nav-link py-2.5 px-3 mb-1.5 rounded d-flex align-items-center text-decoration-none transition-all"
+            :style="{ 
+              backgroundColor: activeTab === 'dich-vu' ? '#22d3ee20' : 'transparent',
+              color: activeTab === 'dich-vu' ? '#0f766e' : '#6b7280',
+              fontWeight: activeTab === 'dich-vu' ? '700' : '500',
+              borderLeft: activeTab === 'dich-vu' ? '4px solid #0f766e' : 'none',
+              cursor: 'pointer',
+              fontSize: '14px'
+            }"
+            @click.prevent="selectTab('dich-vu')"
+            href="#"
+          >
+            <i class="fas fa-briefcase-medical mr-3 text-center" style="width: 20px; font-size: 16px;"></i>
+            <span>Dịch vụ</span>
+          </a>
         </nav>
       </div>
     </div>
